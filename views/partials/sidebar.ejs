@@ -1,0 +1,41 @@
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🛒</div>
+    <div class="logo-text">
+      <strong>TokoKita</strong>
+      <small>Admin Panel</small>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Menu Utama</div>
+    <a href="/" class="nav-item <%= currentPath === '/' ? 'active' : '' %>">
+      <span class="ic">📊</span> Dashboard
+    </a>
+    <a href="/produk" class="nav-item <%= currentPath.startsWith('/produk') ? 'active' : '' %>">
+      <span class="ic">📦</span> Produk
+    </a>
+    <a href="/pesanan" class="nav-item <%= currentPath.startsWith('/pesanan') ? 'active' : '' %>">
+      <span class="ic">🛒</span> Pesanan
+    </a>
+    <a href="/pengiriman" class="nav-item <%= currentPath.startsWith('/pengiriman') ? 'active' : '' %>">
+      <span class="ic">🚚</span> Pengiriman
+    </a>
+    <a href="/pembayaran" class="nav-item <%= currentPath.startsWith('/pembayaran') ? 'active' : '' %>">
+      <span class="ic">💳</span> Pembayaran
+    </a>
+    <a href="/pelanggan" class="nav-item <%= currentPath.startsWith('/pelanggan') ? 'active' : '' %>">
+      <span class="ic">👥</span> Pelanggan
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="nav-label">Pengaturan</div>
+    <a href="/pengaturan" class="nav-item">
+      <span class="ic">⚙️</span> Pengaturan
+    </a>
+    <form method="POST" action="/logout" style="margin: 0;">
+      <button type="submit" class="nav-item" style="width: 100%; text-align: left; background: none; border: 0;">
+        <span class="ic">🚪</span> Keluar
+      </button>
+    </form>
+  </div>
+</aside>

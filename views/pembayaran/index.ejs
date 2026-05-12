@@ -1,0 +1,59 @@
+<form method="GET" action="/pembayaran">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <select class="filter-select" name="status" onchange="this.form.submit()">
+        <option value="">Status: Semua</option>
+        <option value="pending"  <%= filters.status==='pending'  ?'selected':'' %>>Pending</option>
+        <option value="berhasil" <%= filters.status==='berhasil' ?'selected':'' %>>Berhasil</option>
+        <option value="gagal"    <%= filters.status==='gagal'    ?'selected':'' %>>Gagal</option>
+        <option value="refund"   <%= filters.status==='refund'   ?'selected':'' %>>Refund</option>
+      </select>
+      <select class="filter-select" name="metode" onchange="this.form.submit()">
+        <option value="">Metode: Semua</option>
+        <option value="transfer_bank" <%= filters.metode==='transfer_bank' ?'selected':'' %>>Transfer Bank</option>
+        <option value="e_wallet"      <%= filters.metode==='e_wallet'      ?'selected':'' %>>E-Wallet</option>
+        <option value="cod"           <%= filters.metode==='cod'           ?'selected':'' %>>COD</option>
+      </select>
+    </div>
+  </div>
+</form>
+
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID Pesanan</th>
+        <th>Pelanggan</th>
+        <th>Metode</th>
+        <th>Jumlah</th>
+        <th>Tanggal Bayar</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!pembayaran.length) { %>
+        <tr><td colspan="6"><div class="empty-state"><div class="emoji">💳</div>Tidak ada pembayaran.</div></td></tr>
+      <% } %>
+      <% pembayaran.forEach(b => {
+        const s = STATUS_BAYAR[b.status_bayar] || { label: b.status_bayar, class: 'badge-muted' };
+      %>
+        <tr>
+          <td><a href="/pesanan/<%= b.id_pesanan %>" class="cell-id">#TK-<%= String(b.id_pesanan).padStart(4,'0') %></a></td>
+          <td>
+            <div class="customer-cell">
+              <div class="avatar-circle"><%= initials(b.pelanggan_nama) %></div>
+              <div>
+                <strong><%= b.pelanggan_nama %></strong>
+                <small><%= b.pelanggan_email %></small>
+              </div>
+            </div>
+          </td>
+          <td><%= metodeLabel(b.metode, b.nama_penyedia) %></td>
+          <td><strong><%= rupiah(b.jumlah_bayar) %></strong></td>
+          <td><%= b.tanggal_bayar ? formatTanggalJam(b.tanggal_bayar) : '-' %></td>
+          <td><span class="badge <%= s.class %>"><%= s.label %></span></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

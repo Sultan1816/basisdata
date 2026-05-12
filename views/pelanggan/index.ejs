@@ -1,0 +1,61 @@
+<form method="GET" action="/pelanggan">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-input">
+        <span>🔍</span>
+        <input type="text" name="q" placeholder="Cari nama, email, no. HP..." value="<%= filters.q %>">
+      </div>
+      <select class="filter-select" name="status" onchange="this.form.submit()">
+        <option value="">Semua Status</option>
+        <option value="aktif"     <%= filters.status==='aktif'?'selected':'' %>>Aktif</option>
+        <option value="nonaktif"  <%= filters.status==='nonaktif'?'selected':'' %>>Nonaktif</option>
+        <option value="diblokir"  <%= filters.status==='diblokir'?'selected':'' %>>Diblokir</option>
+      </select>
+    </div>
+  </div>
+</form>
+
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Pelanggan</th>
+        <th>No. HP</th>
+        <th>Tgl Daftar</th>
+        <th>Total Pesanan</th>
+        <th>Total Belanja</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!pelanggan.length) { %>
+        <tr><td colspan="6"><div class="empty-state"><div class="emoji">👥</div>Tidak ada pelanggan.</div></td></tr>
+      <% } %>
+      <% pelanggan.forEach(p => {
+        const statusMap = {
+          aktif:    { label: 'Aktif',    class: 'badge-success' },
+          nonaktif: { label: 'Nonaktif', class: 'badge-muted' },
+          diblokir: { label: 'Diblokir', class: 'badge-danger' }
+        };
+        const s = statusMap[p.status_akun] || { label: p.status_akun, class: 'badge-muted' };
+      %>
+        <tr>
+          <td>
+            <div class="customer-cell">
+              <div class="avatar-circle"><%= initials(p.nama) %></div>
+              <div>
+                <strong><%= p.nama %></strong>
+                <small><%= p.email %></small>
+              </div>
+            </div>
+          </td>
+          <td><%= p.no_hp %></td>
+          <td><%= formatTanggal(p.tanggal_daftar) %></td>
+          <td><strong><%= p.total_pesanan %></strong></td>
+          <td><strong><%= rupiah(p.total_belanja) %></strong></td>
+          <td><span class="badge <%= s.class %>"><%= s.label %></span></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
