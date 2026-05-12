@@ -1,81 +1,99 @@
-<h2><%= produk ? 'Edit Produk' : 'Tambah Produk Baru' %></h2>
+<h2 id="formTitle"><%= mode === 'edit' ? 'Edit Produk' : 'Tambah Produk Baru' %></h2>
 
-<form method="POST" action="<%= produk ? `/produk/${produk.id_produk}/edit` : '/produk/baru' %>">
+<form id="produkForm">
   <div class="form-group">
     <label for="nama_produk">Nama Produk</label>
-    <input
-      id="nama_produk"
-      type="text"
-      name="nama_produk"
-      class="form-control"
-      required
-      value="<%= produk ? produk.nama_produk : '' %>">
+    <input id="nama_produk" type="text" class="form-control" required>
   </div>
 
   <div class="form-group">
     <label for="id_kategori">Kategori</label>
-    <select id="id_kategori" name="id_kategori" class="form-control" required>
-      <% kategoriList.forEach(k => { %>
-        <option value="<%= k.id_kategori %>" <%= produk && produk.id_kategori === k.id_kategori ? 'selected' : '' %>>
-          <%= k.nama_kategori %>
-        </option>
-      <% }) %>
-    </select>
+    <select id="id_kategori" class="form-control" required></select>
   </div>
 
   <div class="form-group">
     <label for="harga">Harga (Rp)</label>
-    <input
-      id="harga"
-      type="number"
-      name="harga"
-      min="0"
-      step="100"
-      class="form-control"
-      required
-      value="<%= produk ? produk.harga : '' %>">
+    <input id="harga" type="number" min="0" step="100" class="form-control" required>
   </div>
 
   <div class="form-group">
     <label for="stok">Stok</label>
-    <input
-      id="stok"
-      type="number"
-      name="stok"
-      min="0"
-      class="form-control"
-      required
-      value="<%= produk ? produk.stok : 0 %>">
+    <input id="stok" type="number" min="0" class="form-control" required value="0">
   </div>
 
   <div class="form-group">
     <label for="berat_gram">Berat (gram)</label>
-    <input
-      id="berat_gram"
-      type="number"
-      name="berat_gram"
-      min="0"
-      class="form-control"
-      value="<%= produk ? produk.berat_gram : 0 %>">
+    <input id="berat_gram" type="number" min="0" class="form-control" value="0">
   </div>
 
   <div class="form-group">
     <label for="is_active">Status</label>
-    <select id="is_active" name="is_active" class="form-control">
-      <option value="1" <%= !produk || produk.is_active ? 'selected' : '' %>>Aktif</option>
-      <option value="0" <%= produk && !produk.is_active ? 'selected' : '' %>>Nonaktif</option>
+    <select id="is_active" class="form-control">
+      <option value="1">Aktif</option>
+      <option value="0">Nonaktif</option>
     </select>
   </div>
 
   <div class="form-group">
     <label for="deskripsi">Deskripsi</label>
-    <textarea
-      id="deskripsi"
-      name="deskripsi"
-      class="form-control"
-      rows="4"><%= produk ? produk.deskripsi || '' : '' %></textarea>
+    <textarea id="deskripsi" class="form-control" rows="4"></textarea>
   </div>
 
-  <button type="submit" class="btn btn-primary"><%= produk ? 'Simpan Perubahan' : 'Tambah Produk' %></button>
+  <button type="submit" class="btn btn-primary" id="submitBtn">
+    <%= mode === 'edit' ? 'Simpan Perubahan' : 'Tambah Produk' %>
+  </button>
   <a href="/produk" class="btn">Batal</a>
 </form>
+
+<script>
+  const MODE = "<%= mode %>";
+  const ID_PRODUK = <%- idProduk ? JSON.stringify(idProduk) : 'null' %>;
+
+  async function loadKategori(selectedId) {
+    const sel = document.getElementById('id_kategori');
+    const kategori = await API.get('/api/kategori');
+    clear(sel);
+    for (const k of kategori) {
+      const opt = el('option', { value: k.id_kategori }, k.nama_kategori);
+      if (String(selectedId) === String(k.id_kategori)) opt.selected = true;
+      sel.appendChild(opt);
+    }
+  }
+
+  async function loadProduk() {
+    const p = await API.get('/api/produk/' + ID_PRODUK);
+    document.getElementById('nama_produk').value = p.nama_produk || '';
+    document.getElementById('harga').value       = p.harga       || 0;
+    document.getElementById('stok').value        = p.stok        || 0;
+    document.getElementById('berat_gram').value  = p.berat_gram  || 0;
+    document.getElementById('is_active').value   = p.is_active ? '1' : '0';
+    document.getElementById('deskripsi').value   = p.deskripsi   || '';
+    await loadKategori(p.id_kategori);
+  }
+
+  document.getElementById('produkForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const body = {
+      id_kategori: document.getElementById('id_kategori').value,
+      nama_produk: document.getElementById('nama_produk').value,
+      deskripsi:   document.getElementById('deskripsi').value,
+      harga:       Number(document.getElementById('harga').value),
+      stok:        Number(document.getElementById('stok').value),
+      berat_gram:  Number(document.getElementById('berat_gram').value),
+      is_active:   Number(document.getElementById('is_active').value)
+    };
+    try {
+      if (MODE === 'edit') {
+        await API.put('/api/produk/' + ID_PRODUK, body);
+      } else {
+        await API.post('/api/produk', body);
+      }
+      location.href = '/produk';
+    } catch (err) { showError(err.message); }
+  });
+
+  (async () => {
+    if (MODE === 'edit') await loadProduk();
+    else                 await loadKategori();
+  })();
+</script>

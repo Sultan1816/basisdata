@@ -1,15 +1,15 @@
-<form method="GET" action="/pelanggan" class="filter-bar">
+<form id="filterForm" class="filter-bar">
   <label>
     Cari:
-    <input type="text" name="q" value="<%= filters.q %>" placeholder="Nama, email, no. HP...">
+    <input type="text" id="fQ" placeholder="Nama, email, no. HP...">
   </label>
   <label>
     Status:
-    <select name="status" onchange="this.form.submit()">
+    <select id="fStatus">
       <option value="">Semua</option>
-      <option value="aktif"    <%= filters.status === 'aktif'    ? 'selected' : '' %>>Aktif</option>
-      <option value="nonaktif" <%= filters.status === 'nonaktif' ? 'selected' : '' %>>Nonaktif</option>
-      <option value="diblokir" <%= filters.status === 'diblokir' ? 'selected' : '' %>>Diblokir</option>
+      <option value="aktif">Aktif</option>
+      <option value="nonaktif">Nonaktif</option>
+      <option value="diblokir">Diblokir</option>
     </select>
   </label>
   <button type="submit" class="btn">Filter</button>
@@ -27,25 +27,50 @@
       <th>Status</th>
     </tr>
   </thead>
-  <tbody>
-    <% if (!pelanggan.length) { %>
-      <tr><td colspan="7">Tidak ada pelanggan.</td></tr>
-    <% } %>
-    <% const statusMap = {
-         aktif:    'Aktif',
-         nonaktif: 'Nonaktif',
-         diblokir: 'Diblokir'
-       }; %>
-    <% pelanggan.forEach(p => { %>
-      <tr>
-        <td><%= p.nama %></td>
-        <td><%= p.email %></td>
-        <td><%= p.no_hp %></td>
-        <td><%= formatTanggal(p.tanggal_daftar) %></td>
-        <td><%= p.total_pesanan %></td>
-        <td><%= rupiah(p.total_belanja) %></td>
-        <td><%= statusMap[p.status_akun] || p.status_akun %></td>
-      </tr>
-    <% }) %>
+  <tbody id="rows">
+    <tr><td colspan="7">Memuat...</td></tr>
   </tbody>
 </table>
+
+<script>
+  const STATUS_AKUN = {
+    aktif:    'Aktif',
+    nonaktif: 'Nonaktif',
+    diblokir: 'Diblokir'
+  };
+
+  async function load() {
+    const params = new URLSearchParams();
+    const q = document.getElementById('fQ').value;
+    const s = document.getElementById('fStatus').value;
+    if (q) params.set('q', q);
+    if (s) params.set('status', s);
+    try {
+      const rows = await API.get('/api/pelanggan' + (params.toString() ? '?' + params : ''));
+      const tbody = document.getElementById('rows');
+      clear(tbody);
+      if (!rows.length) {
+        tbody.appendChild(el('tr', null, el('td', { colspan: 7 }, 'Tidak ada pelanggan.')));
+        return;
+      }
+      for (const p of rows) {
+        tbody.appendChild(el('tr', null,
+          el('td', null, p.nama),
+          el('td', null, p.email),
+          el('td', null, p.no_hp),
+          el('td', null, formatTanggal(p.tanggal_daftar)),
+          el('td', null, String(p.total_pesanan)),
+          el('td', null, rupiah(p.total_belanja)),
+          el('td', null, STATUS_AKUN[p.status_akun] || p.status_akun)
+        ));
+      }
+    } catch (err) { showError(err.message); }
+  }
+
+  document.getElementById('filterForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    load();
+  });
+  document.getElementById('fStatus').addEventListener('change', load);
+  load();
+</script>

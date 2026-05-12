@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../db');
+const db = require('../../db');
 
 const router = express.Router();
 
@@ -12,7 +12,8 @@ router.get('/', async (req, res, next) => {
     if (metode) { where += ' AND pay.metode = ?';      params.push(metode); }
 
     const [rows] = await db.query(`
-      SELECT pay.*, p.id_pesanan, pl.nama AS pelanggan_nama, pl.email AS pelanggan_email
+      SELECT pay.*, p.id_pesanan,
+        pl.nama AS pelanggan_nama, pl.email AS pelanggan_email
       FROM pembayaran pay
       JOIN pesanan p ON p.id_pesanan = pay.id_pesanan
       JOIN pelanggan pl ON pl.id_pelanggan = p.id_pelanggan
@@ -20,13 +21,7 @@ router.get('/', async (req, res, next) => {
       ORDER BY pay.id_pembayaran DESC
     `, params);
 
-    res.render('pembayaran/index', {
-      title: 'Daftar Pembayaran - TokoKita',
-      pageTitle: 'Daftar Pembayaran',
-      breadcrumb: 'Home / Pembayaran',
-      pembayaran: rows,
-      filters: { status: status || '', metode: metode || '' }
-    });
+    res.json(rows);
   } catch (err) { next(err); }
 });
 
