@@ -1,7 +1,7 @@
 <h2>Pesanan #TK-<%= String(pesanan.id_pesanan).padStart(4, '0') %></h2>
 <p class="text-muted">
   <%= formatTanggalJam(pesanan.tanggal_pesan) %>
-  - Status: <strong><%= statusLabel(STATUS_PESANAN, pesanan.status_pesanan) %></strong>
+  - Status: <strong><%= STATUS_PESANAN[pesanan.status_pesanan] || pesanan.status_pesanan %></strong>
 </p>
 
 <h3>Produk Dipesan</h3>
@@ -47,7 +47,7 @@
     <li>Metode: <%= metodeLabel(bayar.metode, bayar.nama_penyedia) %></li>
     <li>Jumlah Bayar: <%= rupiah(bayar.jumlah_bayar) %></li>
     <li>Tanggal: <%= bayar.tanggal_bayar ? formatTanggalJam(bayar.tanggal_bayar) : '-' %></li>
-    <li>Status: <%= statusLabel(STATUS_BAYAR, bayar.status_bayar) %></li>
+    <li>Status: <%= STATUS_BAYAR[bayar.status_bayar] || bayar.status_bayar %></li>
   </ul>
 <% } %>
 
@@ -56,7 +56,7 @@
   <ul class="kv-list">
     <li>Kurir: <%= kirim.kode_kurir %> <%= kirim.layanan || '' %></li>
     <li>No. Resi: <%= kirim.no_resi %></li>
-    <li>Status: <%= statusLabel(STATUS_KIRIM, kirim.status_kirim) %></li>
+    <li>Status: <%= STATUS_KIRIM[kirim.status_kirim] || kirim.status_kirim %></li>
   </ul>
   <p><a href="/pengiriman?q=<%= kirim.no_resi %>">Lacak paket</a></p>
 <% } %>

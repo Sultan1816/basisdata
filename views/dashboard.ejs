@@ -30,7 +30,7 @@
         <td><%= o.pelanggan %></td>
         <td><%= o.produk_utama || '-' %></td>
         <td><%= rupiah(o.total_tagihan) %></td>
-        <td><%= statusLabel(STATUS_PESANAN, o.status_pesanan) %></td>
+        <td><%= STATUS_PESANAN[o.status_pesanan] || o.status_pesanan %></td>
       </tr>
     <% }) %>
   </tbody>

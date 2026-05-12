@@ -54,10 +54,6 @@ const STATUS_BAYAR = {
   refund:   'Refund'
 };
 
-function statusLabel(map, key) {
-  return map[key] || key || '-';
-}
-
 function initials(name) {
   if (!name) return '?';
   return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
@@ -79,7 +75,6 @@ module.exports = {
   STATUS_PESANAN,
   STATUS_KIRIM,
   STATUS_BAYAR,
-  statusLabel,
   initials,
   metodeLabel
 };
