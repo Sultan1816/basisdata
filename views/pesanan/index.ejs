@@ -58,13 +58,13 @@
         <td>
           <% if (o.bayar_metode) { %>
             <%= metodeLabel(o.bayar_metode, o.bayar_penyedia) %><br>
-            <small><%= statusLabel(STATUS_BAYAR, o.status_bayar) %></small>
+            <small><%= STATUS_BAYAR[o.status_bayar] || o.status_bayar %></small>
           <% } else { %>
             -
           <% } %>
         </td>
         <td><%= o.kode_kurir || '-' %></td>
-        <td><%= statusLabel(STATUS_PESANAN, o.status_pesanan) %></td>
+        <td><%= STATUS_PESANAN[o.status_pesanan] || o.status_pesanan %></td>
         <td><a href="/pesanan/<%= o.id_pesanan %>">Lihat</a></td>
       </tr>
     <% }) %>

@@ -46,7 +46,7 @@
         <td><%= metodeLabel(b.metode, b.nama_penyedia) %></td>
         <td><%= rupiah(b.jumlah_bayar) %></td>
         <td><%= b.tanggal_bayar ? formatTanggalJam(b.tanggal_bayar) : '-' %></td>
-        <td><%= statusLabel(STATUS_BAYAR, b.status_bayar) %></td>
+        <td><%= STATUS_BAYAR[b.status_bayar] || b.status_bayar %></td>
       </tr>
     <% }) %>
   </tbody>

@@ -54,7 +54,7 @@
   <ul class="kv-list">
     <li>Kurir: <%= tracking.nama_kurir %> (<%= tracking.kode_kurir %>) <%= tracking.layanan || '' %></li>
     <li>No. Resi: <strong><%= tracking.no_resi %></strong></li>
-    <li>Status: <strong><%= statusLabel(STATUS_KIRIM, tracking.status_kirim) %></strong></li>
+    <li>Status: <strong><%= STATUS_KIRIM[tracking.status_kirim] || tracking.status_kirim %></strong></li>
     <li>Tanggal Kirim: <%= formatTanggal(tracking.tanggal_kirim) %></li>
     <li>Estimasi Tiba: <%= formatTanggal(tracking.estimasi_tiba) %></li>
     <li>Ongkos Kirim: <%= rupiah(tracking.ongkos_kirim) %></li>
@@ -121,7 +121,7 @@
 
   <% if (bayar) { %>
     <p>
-      Pembayaran <strong><%= statusLabel(STATUS_BAYAR, bayar.status_bayar) %></strong>
+      Pembayaran <strong><%= STATUS_BAYAR[bayar.status_bayar] || bayar.status_bayar %></strong>
       via <%= metodeLabel(bayar.metode, bayar.nama_penyedia) %><% if (bayar.tanggal_bayar) { %>
       pada <%= formatTanggalJam(bayar.tanggal_bayar) %><% } %>.
     </p>
