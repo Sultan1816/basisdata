@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= title %></title>
-<link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+
 <div class="login-shell">
   <div class="login-left">
     <div class="login-brand">
-      <div class="lb">🛒</div>
       <div class="lt">
         <strong>TokoKita</strong>
         <small>E-Commerce Admin Panel</small>
@@ -18,28 +18,24 @@
     </div>
 
     <div class="login-hero">
-      <div class="illbox">
-        <div class="cb-grid">
-          <div class="cb"><span class="ic">📦</span><span class="lbl">JNE</span></div>
-          <div class="cb"><span class="ic">📦</span><span class="lbl">J&amp;T</span></div>
-          <div class="cb"><span class="ic">📦</span><span class="lbl">SiCepat</span></div>
-        </div>
-      </div>
-      <h2>Kelola Toko Online Anda dengan Mudah &amp; Cepat</h2>
-      <p>Platform admin terintegrasi dengan fitur multi-kurir tracking real-time. Pantau pesanan, pengiriman, dan pembayaran dalam satu dashboard.</p>
-      <div class="feature-row">
-        <span class="feat"><span class="chk">✓</span> Real-time tracking</span>
-        <span class="feat"><span class="chk">✓</span> Multi-kurir support</span>
-        <span class="feat"><span class="chk">✓</span> Laporan lengkap</span>
-      </div>
+      <h2>Kelola Toko Online Anda dengan Mudah dan Cepat</h2>
+      <p>
+        Platform admin terintegrasi dengan fitur multi-kurir tracking real-time.
+        Pantau pesanan, pengiriman, dan pembayaran dalam satu dashboard.
+      </p>
+      <ul class="feature-row">
+        <li>Real-time tracking</li>
+        <li>Multi-kurir support (JNE, J&amp;T, SiCepat)</li>
+        <li>Laporan lengkap</li>
+      </ul>
     </div>
 
-    <div class="login-footer">© 2026 TokoKita. All rights reserved.</div>
+    <div class="login-footer">&copy; 2026 TokoKita. All rights reserved.</div>
   </div>
 
   <div class="login-right">
     <div class="login-form-wrap">
-      <h1>Selamat Datang Kembali! 👋</h1>
+      <h1>Selamat Datang Kembali</h1>
       <p>Masuk ke akun admin Anda untuk mengelola TokoKita.</p>
 
       <% if (flash.success && flash.success.length) { %>
@@ -51,19 +47,27 @@
 
       <form method="POST" action="/login">
         <div class="form-group">
-          <label>Email</label>
-          <div class="input-with-icon">
-            <input class="form-control" type="email" name="email" placeholder="admin@tokokita.com" required value="admin@tokokita.com" autofocus>
-            <span class="icon">✉️</span>
-          </div>
+          <label for="email">Email</label>
+          <input
+            id="email"
+            class="form-control"
+            type="email"
+            name="email"
+            placeholder="admin@tokokita.com"
+            value="admin@tokokita.com"
+            required
+            autofocus>
         </div>
 
         <div class="form-group">
-          <label>Password</label>
-          <div class="input-with-icon">
-            <input class="form-control" type="password" name="password" id="password" placeholder="••••••••••" required>
-            <span class="icon" style="cursor:pointer" onclick="(()=>{const p=document.getElementById('password');p.type=p.type==='password'?'text':'password';})()">👁</span>
-          </div>
+          <label for="password">Password</label>
+          <input
+            id="password"
+            class="form-control"
+            type="password"
+            name="password"
+            placeholder="Masukkan password"
+            required>
         </div>
 
         <div class="form-actions">
@@ -74,18 +78,17 @@
           <a href="#" class="link">Lupa password?</a>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block" style="height: 56px;">
-          Masuk ke Dashboard <span>→</span>
-        </button>
+        <button type="submit" class="btn btn-primary btn-block">Masuk ke Dashboard</button>
       </form>
 
       <div class="divider">atau</div>
 
-      <div class="text-muted" style="text-align: center;">
+      <div class="text-center">
         Belum punya akun? <a href="#" class="link">Daftar Sekarang</a>
       </div>
     </div>
   </div>
 </div>
+
 </body>
 </html>

@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><%= typeof title !== 'undefined' ? title : 'TokoKita Admin' %></title>
-<link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title : 'TokoKita Admin' %></title>
+  <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
+
 <div class="app-shell">
   <%- include('../partials/sidebar') %>
+
   <div class="main">
-    <%- include('../partials/topbar', { pageTitle: typeof pageTitle !== 'undefined' ? pageTitle : title, breadcrumb: typeof breadcrumb !== 'undefined' ? breadcrumb : '' }) %>
+    <%- include('../partials/topbar', {
+      pageTitle: typeof pageTitle !== 'undefined' ? pageTitle : title,
+      breadcrumb: typeof breadcrumb !== 'undefined' ? breadcrumb : ''
+    }) %>
+
     <div class="content">
       <% if (flash.success && flash.success.length) { %>
         <div class="alert alert-success"><%= flash.success[0] %></div>
@@ -18,9 +24,11 @@
       <% if (flash.error && flash.error.length) { %>
         <div class="alert alert-error"><%= flash.error[0] %></div>
       <% } %>
+
       <%- body %>
     </div>
   </div>
 </div>
+
 </body>
 </html>

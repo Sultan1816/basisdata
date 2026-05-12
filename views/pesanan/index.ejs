@@ -1,15 +1,17 @@
-<!-- Status tabs -->
-<div class="tabs mb-6">
-  <% const tabs = [
-    {key:'semua', label:'Semua'},
-    {key:'menunggu_bayar', label:'Menunggu Bayar'},
-    {key:'diproses', label:'Diproses'},
-    {key:'dikirim', label:'Dikirim'},
-    {key:'selesai', label:'Selesai'},
-    {key:'dibatalkan', label:'Dibatalkan'},
-  ]; %>
+<% const tabs = [
+  { key: 'semua',          label: 'Semua' },
+  { key: 'menunggu_bayar', label: 'Menunggu Bayar' },
+  { key: 'diproses',       label: 'Diproses' },
+  { key: 'dikirim',        label: 'Dikirim' },
+  { key: 'selesai',        label: 'Selesai' },
+  { key: 'dibatalkan',     label: 'Dibatalkan' }
+]; %>
+
+<div class="tabs mb-4">
   <% tabs.forEach(t => { %>
-    <a href="/pesanan<%= t.key==='semua' ? '' : `?status=${t.key}` %>" class="tab <%= filters.status === t.key ? 'active' : '' %>">
+    <a
+      href="/pesanan<%= t.key === 'semua' ? '' : `?status=${t.key}` %>"
+      class="tab <%= filters.status === t.key ? 'active' : '' %>">
       <%= t.label %>
       <span class="count"><%= Number(counts[t.key] || 0).toLocaleString('id-ID') %></span>
     </a>
@@ -21,14 +23,13 @@
   <div class="toolbar">
     <div class="toolbar-left">
       <div class="search-input">
-        <span>🔍</span>
         <input type="text" name="q" placeholder="Cari ID pesanan, nama pelanggan..." value="<%= filters.q %>">
       </div>
-      <button type="submit" class="btn btn-outline">Filter</button>
+      <button type="submit" class="btn">Filter</button>
     </div>
-    <div class="flex gap-2">
-      <button type="button" class="btn btn-outline">Ekspor</button>
-      <a href="#" class="btn btn-primary">+ Pesanan Baru</a>
+    <div class="toolbar-right">
+      <button type="button" class="btn">Ekspor</button>
+      <a href="#" class="btn btn-primary">Pesanan Baru</a>
     </div>
   </div>
 </form>
@@ -49,14 +50,14 @@
     </thead>
     <tbody>
       <% if (!pesanan.length) { %>
-        <tr><td colspan="8"><div class="empty-state"><div class="emoji">🛒</div>Tidak ada pesanan untuk filter ini.</div></td></tr>
+        <tr><td colspan="8"><div class="empty-state">Tidak ada pesanan untuk filter ini.</div></td></tr>
       <% } %>
       <% pesanan.forEach(o => {
-        const sp = STATUS_PESANAN[o.status_pesanan] || { label: o.status_pesanan, class: 'badge-muted' };
-        const sb = STATUS_BAYAR[o.status_bayar] || { label: o.status_bayar || '-', class: 'badge-muted' };
+        const sp = STATUS_PESANAN[o.status_pesanan] || { label: o.status_pesanan, class: '' };
+        const sb = STATUS_BAYAR[o.status_bayar] || { label: o.status_bayar || '-', class: '' };
       %>
         <tr>
-          <td><span class="cell-id">#TK-<%= String(o.id_pesanan).padStart(4,'0') %></span></td>
+          <td><span class="cell-id">#TK-<%= String(o.id_pesanan).padStart(4, '0') %></span></td>
           <td>
             <div class="customer-cell">
               <div class="avatar-circle"><%= initials(o.pelanggan_nama) %></div>
@@ -71,33 +72,33 @@
           <td>
             <% if (o.bayar_metode) { %>
               <div><%= metodeLabel(o.bayar_metode, o.bayar_penyedia) %></div>
-              <span class="badge <%= sb.class %>"><%= sb.label %></span>
+              <span class="badge"><%= sb.label %></span>
             <% } else { %>
-              <span class="text-muted">—</span>
+              <span class="text-muted">-</span>
             <% } %>
           </td>
           <td>
             <% if (o.kode_kurir) { %>
-              <span class="kurir-badge <%= kurirClass(o.kode_kurir) %>"><%= o.kode_kurir %></span>
+              <span class="badge"><%= o.kode_kurir %></span>
             <% } else { %>
-              <span class="text-muted">—</span>
+              <span class="text-muted">-</span>
             <% } %>
           </td>
-          <td><span class="badge <%= sp.class %>"><span class="dot"></span> <%= sp.label %></span></td>
+          <td><span class="badge"><%= sp.label %></span></td>
           <td class="text-right">
-            <a href="/pesanan/<%= o.id_pesanan %>" class="icon-square" title="Lihat">👁</a>
-            <a href="/pesanan/<%= o.id_pesanan %>" class="icon-square" title="More">⋯</a>
+            <a href="/pesanan/<%= o.id_pesanan %>" class="btn">Lihat</a>
           </td>
         </tr>
       <% }) %>
     </tbody>
   </table>
+
   <div class="pagination">
-    <div class="info">Menampilkan 1-<%= pesanan.length %> dari <%= counts.semua %> pesanan</div>
+    <div class="info">Menampilkan <%= pesanan.length %> dari <%= counts.semua %> pesanan</div>
     <div class="pages">
-      <button class="page-btn" disabled>‹ Sebelumnya</button>
+      <button class="page-btn" disabled>Sebelumnya</button>
       <button class="page-btn active">1</button>
-      <button class="page-btn" disabled>Selanjutnya ›</button>
+      <button class="page-btn" disabled>Selanjutnya</button>
     </div>
   </div>
 </div>
