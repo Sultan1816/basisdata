@@ -1,8 +1,5 @@
-<h2>Pesanan #TK-<%= String(pesanan.id_pesanan).padStart(4, '0') %></h2>
-<p class="text-muted">
-  <%= formatTanggalJam(pesanan.tanggal_pesan) %>
-  - Status: <strong><%= STATUS_PESANAN[pesanan.status_pesanan] || pesanan.status_pesanan %></strong>
-</p>
+<h2 id="orderTitle">Memuat...</h2>
+<p class="text-muted" id="orderMeta"></p>
 
 <h3>Produk Dipesan</h3>
 <table class="table">
@@ -14,60 +11,107 @@
       <th>Subtotal</th>
     </tr>
   </thead>
-  <tbody>
-    <% items.forEach(it => { %>
-      <tr>
-        <td><%= it.nama_produk %></td>
-        <td><%= it.jumlah %></td>
-        <td><%= rupiah(it.harga_satuan) %></td>
-        <td><%= rupiah(it.subtotal) %></td>
-      </tr>
-    <% }) %>
-  </tbody>
+  <tbody id="items"></tbody>
 </table>
 
-<ul class="kv-list">
-  <li>Subtotal Produk: <strong><%= rupiah(pesanan.total_harga) %></strong></li>
-  <li>Ongkos Kirim: <strong><%= rupiah(pesanan.ongkos_kirim) %></strong></li>
-  <li>Diskon: <strong>- <%= rupiah(pesanan.diskon) %></strong></li>
-  <li>Total Tagihan: <strong><%= rupiah(pesanan.total_tagihan) %></strong></li>
-</ul>
+<ul class="kv-list" id="totals"></ul>
 
 <h3>Alamat Penerima</h3>
-<ul class="kv-list">
-  <li>Label: <%= pesanan.label %></li>
-  <li>Penerima: <%= pesanan.penerima %></li>
-  <li>Telepon: <%= pesanan.no_hp_penerima %></li>
-  <li>Alamat: <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %></li>
-</ul>
+<ul class="kv-list" id="alamat"></ul>
 
-<% if (bayar) { %>
-  <h3>Pembayaran</h3>
-  <ul class="kv-list">
-    <li>Metode: <%= metodeLabel(bayar.metode, bayar.nama_penyedia) %></li>
-    <li>Jumlah Bayar: <%= rupiah(bayar.jumlah_bayar) %></li>
-    <li>Tanggal: <%= bayar.tanggal_bayar ? formatTanggalJam(bayar.tanggal_bayar) : '-' %></li>
-    <li>Status: <%= STATUS_BAYAR[bayar.status_bayar] || bayar.status_bayar %></li>
-  </ul>
-<% } %>
-
-<% if (kirim) { %>
-  <h3>Pengiriman</h3>
-  <ul class="kv-list">
-    <li>Kurir: <%= kirim.kode_kurir %> <%= kirim.layanan || '' %></li>
-    <li>No. Resi: <%= kirim.no_resi %></li>
-    <li>Status: <%= STATUS_KIRIM[kirim.status_kirim] || kirim.status_kirim %></li>
-  </ul>
-  <p><a href="/pengiriman?q=<%= kirim.no_resi %>">Lacak paket</a></p>
-<% } %>
+<div id="bayarSection"></div>
+<div id="kirimSection"></div>
 
 <h3>Ubah Status Pesanan</h3>
-<form method="POST" action="/pesanan/<%= pesanan.id_pesanan %>/status">
-  <select name="status" class="form-control">
-    <% Object.entries(STATUS_PESANAN).forEach(([key, label]) => { %>
-      <option value="<%= key %>" <%= pesanan.status_pesanan === key ? 'selected' : '' %>><%= label %></option>
-    <% }) %>
-  </select>
+<form id="statusForm">
+  <select id="statusSelect" class="form-control"></select>
   <button type="submit" class="btn btn-primary">Update Status</button>
   <a href="/pesanan" class="btn">Kembali</a>
 </form>
+
+<script>
+  const ID_PESANAN = "<%= idPesanan %>";
+  function pad(n, w) { return String(n).padStart(w, '0'); }
+
+  async function load() {
+    try {
+      const data = await API.get('/api/pesanan/' + ID_PESANAN);
+      const { pesanan, items, bayar, kirim } = data;
+
+      document.getElementById('orderTitle').textContent = '#TK-' + pad(pesanan.id_pesanan, 4);
+      document.getElementById('orderMeta').innerHTML =
+        formatTanggalJam(pesanan.tanggal_pesan) +
+        ' - Status: <strong>' + statusLabel(window.STATUS_PESANAN, pesanan.status_pesanan) + '</strong>';
+
+      const tbody = document.getElementById('items');
+      clear(tbody);
+      for (const it of items) {
+        tbody.appendChild(el('tr', null,
+          el('td', null, it.nama_produk),
+          el('td', null, String(it.jumlah)),
+          el('td', null, rupiah(it.harga_satuan)),
+          el('td', null, rupiah(it.subtotal))
+        ));
+      }
+
+      document.getElementById('totals').innerHTML = `
+        <li>Subtotal Produk: <strong>${rupiah(pesanan.total_harga)}</strong></li>
+        <li>Ongkos Kirim: <strong>${rupiah(pesanan.ongkos_kirim)}</strong></li>
+        <li>Diskon: <strong>- ${rupiah(pesanan.diskon)}</strong></li>
+        <li>Total Tagihan: <strong>${rupiah(pesanan.total_tagihan)}</strong></li>
+      `;
+
+      document.getElementById('alamat').innerHTML = `
+        <li>Label: ${pesanan.label || '-'}</li>
+        <li>Penerima: ${pesanan.penerima}</li>
+        <li>Telepon: ${pesanan.no_hp_penerima}</li>
+        <li>Alamat: ${pesanan.alamat_lengkap}, ${pesanan.kota}, ${pesanan.provinsi} ${pesanan.kode_pos}</li>
+      `;
+
+      if (bayar) {
+        document.getElementById('bayarSection').innerHTML = `
+          <h3>Pembayaran</h3>
+          <ul class="kv-list">
+            <li>Metode: ${metodeLabel(bayar.metode, bayar.nama_penyedia)}</li>
+            <li>Jumlah Bayar: ${rupiah(bayar.jumlah_bayar)}</li>
+            <li>Tanggal: ${bayar.tanggal_bayar ? formatTanggalJam(bayar.tanggal_bayar) : '-'}</li>
+            <li>Status: ${statusLabel(window.STATUS_BAYAR, bayar.status_bayar)}</li>
+          </ul>
+        `;
+      }
+
+      if (kirim) {
+        document.getElementById('kirimSection').innerHTML = `
+          <h3>Pengiriman</h3>
+          <ul class="kv-list">
+            <li>Kurir: ${kirim.kode_kurir} ${kirim.layanan || ''}</li>
+            <li>No. Resi: ${kirim.no_resi}</li>
+            <li>Status: ${statusLabel(window.STATUS_KIRIM, kirim.status_kirim)}</li>
+          </ul>
+          <p><a href="/pengiriman?q=${encodeURIComponent(kirim.no_resi)}">Lacak paket</a></p>
+        `;
+      }
+
+      const sel = document.getElementById('statusSelect');
+      clear(sel);
+      for (const [key, label] of Object.entries(window.STATUS_PESANAN)) {
+        const opt = el('option', { value: key }, label);
+        if (pesanan.status_pesanan === key) opt.selected = true;
+        sel.appendChild(opt);
+      }
+    } catch (err) { showError(err.message); }
+  }
+
+  document.getElementById('statusForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      await API.patch('/api/pesanan/' + ID_PESANAN + '/status', {
+        status: document.getElementById('statusSelect').value
+      });
+      showSuccess('Status pesanan diperbarui.');
+      load();
+    } catch (err) { showError(err.message); }
+  });
+
+  load();
+</script>

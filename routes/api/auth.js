@@ -1,24 +1,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../db');
+const db = require('../../db');
 
 const router = express.Router();
 
-router.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/');
-  res.render('login', { title: 'Masuk - TokoKita', layout: false });
-});
-
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email dan password wajib diisi.' });
+  }
   try {
     const [rows] = await db.query(
       'SELECT * FROM admin WHERE email = ? AND is_active = 1 LIMIT 1',
       [email]
     );
     if (rows.length === 0) {
-      req.flash('error', 'Email atau password salah.');
-      return res.redirect('/login');
+      return res.status(401).json({ error: 'Email atau password salah.' });
     }
     const admin = rows[0];
 
@@ -28,16 +25,12 @@ router.post('/login', async (req, res) => {
     } else {
       ok = password === admin.password;
       if (ok) {
-        // upgrade to bcrypt
         const hashed = await bcrypt.hash(password, 10);
         await db.query('UPDATE admin SET password = ? WHERE id_admin = ?', [hashed, admin.id_admin]);
       }
     }
 
-    if (!ok) {
-      req.flash('error', 'Email atau password salah.');
-      return res.redirect('/login');
-    }
+    if (!ok) return res.status(401).json({ error: 'Email atau password salah.' });
 
     req.session.user = {
       id: admin.id_admin,
@@ -45,21 +38,20 @@ router.post('/login', async (req, res) => {
       email: admin.email,
       role: admin.role
     };
-    req.flash('success', `Selamat datang, ${admin.nama_admin}!`);
-    res.redirect('/');
+    res.json({ user: req.session.user });
   } catch (err) {
     console.error(err);
-    req.flash('error', 'Terjadi kesalahan server.');
-    res.redirect('/login');
+    res.status(500).json({ error: 'Server error.' });
   }
 });
 
 router.post('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/login'));
+  req.session.destroy(() => res.json({ ok: true }));
 });
 
-router.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/login'));
+router.get('/me', (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: 'Belum login.' });
+  res.json({ user: req.session.user });
 });
 
 module.exports = router;

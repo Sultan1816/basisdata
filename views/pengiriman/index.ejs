@@ -1,17 +1,14 @@
 <h3>Lacak Paket</h3>
-<form method="GET" action="/pengiriman" class="filter-bar">
+<form id="trackForm" class="filter-bar">
   <label>
     Kurir:
-    <select name="kurir">
+    <select id="fKurir">
       <option value="">Semua</option>
-      <% kurirStats.forEach(k => { %>
-        <option value="<%= k.kode_kurir %>" <%= filters.kurir === k.kode_kurir ? 'selected' : '' %>><%= k.kode_kurir %></option>
-      <% }) %>
     </select>
   </label>
   <label>
     No. Resi:
-    <input type="text" name="q" value="<%= filters.q %>" placeholder="contoh: JNE00123456789">
+    <input type="text" id="fQ" placeholder="contoh: JNE00123456789">
   </label>
   <button type="submit" class="btn">Cari</button>
 </form>
@@ -26,108 +23,145 @@
       <th>Dalam Perjalanan</th>
     </tr>
   </thead>
-  <tbody>
-    <% kurirStats.forEach(k => { %>
-      <tr>
-        <td><%= k.nama_kurir %> (<%= k.kode_kurir %>)</td>
-        <td><%= k.total %></td>
-        <td><%= k.terkirim %></td>
-        <td><%= k.perjalanan %></td>
-      </tr>
-    <% }) %>
-    <% const tot = kurirStats.reduce((a, k) => ({
-         total:      a.total      + k.total,
-         terkirim:   a.terkirim   + k.terkirim,
-         perjalanan: a.perjalanan + k.perjalanan
-       }), { total: 0, terkirim: 0, perjalanan: 0 }); %>
-    <tr>
-      <td><strong>Total Aktif</strong></td>
-      <td><strong><%= tot.total %></strong></td>
-      <td><strong><%= tot.terkirim %></strong></td>
-      <td><strong><%= tot.perjalanan %></strong></td>
-    </tr>
+  <tbody id="kurirRows">
+    <tr><td colspan="4">Memuat...</td></tr>
   </tbody>
 </table>
 
-<% if (tracking) { %>
-  <h3>Detail Tracking</h3>
-  <ul class="kv-list">
-    <li>Kurir: <%= tracking.nama_kurir %> (<%= tracking.kode_kurir %>) <%= tracking.layanan || '' %></li>
-    <li>No. Resi: <strong><%= tracking.no_resi %></strong></li>
-    <li>Status: <strong><%= STATUS_KIRIM[tracking.status_kirim] || tracking.status_kirim %></strong></li>
-    <li>Tanggal Kirim: <%= formatTanggal(tracking.tanggal_kirim) %></li>
-    <li>Estimasi Tiba: <%= formatTanggal(tracking.estimasi_tiba) %></li>
-    <li>Ongkos Kirim: <%= rupiah(tracking.ongkos_kirim) %></li>
-    <li>Berat Paket: <%= tracking.total_berat_gram %> gram</li>
-  </ul>
+<div id="trackingDetail"></div>
 
-  <h3>Riwayat Perjalanan Paket</h3>
-  <% if (!riwayat.length) { %>
-    <p>Belum ada riwayat tracking.</p>
-  <% } else { %>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Waktu</th>
-          <th>Lokasi</th>
-          <th>Keterangan</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% riwayat.forEach(rs => { %>
-          <tr>
-            <td><%= formatTanggalJam(rs.waktu_update) %></td>
-            <td><%= rs.lokasi || '-' %></td>
-            <td><%= rs.deskripsi %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
+<script>
+  function pad(n, w) { return String(n).padStart(w, '0'); }
 
-  <h3>Alamat Penerima</h3>
-  <ul class="kv-list">
-    <li>Penerima: <%= pesanan.penerima %></li>
-    <li>Telepon: <%= pesanan.no_hp_penerima %></li>
-    <li>Alamat: <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %></li>
-  </ul>
+  async function loadKurirStats() {
+    const rows = await API.get('/api/pengiriman/kurir-stats');
+    const tbody = document.getElementById('kurirRows');
+    clear(tbody);
 
-  <h3>Ringkasan Pesanan #TK-<%= String(pesanan.id_pesanan).padStart(4, '0') %></h3>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>Produk</th>
-        <th>Jumlah</th>
-        <th>Harga Satuan</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% items.forEach(it => { %>
-        <tr>
-          <td><%= it.nama_produk %></td>
-          <td><%= it.jumlah %></td>
-          <td><%= rupiah(it.harga_satuan) %></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+    const sel = document.getElementById('fKurir');
+    while (sel.options.length > 1) sel.remove(1);
 
-  <ul class="kv-list">
-    <li>Subtotal Produk: <%= rupiah(pesanan.total_harga) %></li>
-    <li>Ongkos Kirim: <%= rupiah(pesanan.ongkos_kirim) %></li>
-    <li>Diskon: - <%= rupiah(pesanan.diskon) %></li>
-    <li>Total Bayar: <strong><%= rupiah(pesanan.total_tagihan) %></strong></li>
-  </ul>
+    let totT = 0, totK = 0, totP = 0;
+    for (const k of rows) {
+      tbody.appendChild(el('tr', null,
+        el('td', null, `${k.nama_kurir} (${k.kode_kurir})`),
+        el('td', null, String(k.total)),
+        el('td', null, String(k.terkirim)),
+        el('td', null, String(k.perjalanan))
+      ));
+      sel.appendChild(el('option', { value: k.kode_kurir }, k.kode_kurir));
+      totT += k.total; totK += k.terkirim; totP += k.perjalanan;
+    }
+    tbody.appendChild(el('tr', null,
+      el('td', null, el('strong', null, 'Total Aktif')),
+      el('td', null, el('strong', null, String(totT))),
+      el('td', null, el('strong', null, String(totK))),
+      el('td', null, el('strong', null, String(totP)))
+    ));
+  }
 
-  <% if (bayar) { %>
-    <p>
-      Pembayaran <strong><%= STATUS_BAYAR[bayar.status_bayar] || bayar.status_bayar %></strong>
-      via <%= metodeLabel(bayar.metode, bayar.nama_penyedia) %><% if (bayar.tanggal_bayar) { %>
-      pada <%= formatTanggalJam(bayar.tanggal_bayar) %><% } %>.
-    </p>
-  <% } %>
+  function renderTracking(data) {
+    const wrap = document.getElementById('trackingDetail');
+    clear(wrap);
 
-  <p><a href="/pesanan/<%= pesanan.id_pesanan %>" class="btn">Buka Pesanan</a></p>
-<% } else { %>
-  <p>Tidak ada pengiriman aktif. Masukkan nomor resi di atas untuk melacak paket.</p>
-<% } %>
+    if (!data.tracking) {
+      wrap.appendChild(el('p', null,
+        'Tidak ada pengiriman aktif. Masukkan nomor resi di atas untuk melacak paket.'
+      ));
+      return;
+    }
+
+    const { tracking, riwayat, pesanan, items, bayar } = data;
+
+    wrap.innerHTML = `
+      <h3>Detail Tracking</h3>
+      <ul class="kv-list">
+        <li>Kurir: ${tracking.nama_kurir} (${tracking.kode_kurir}) ${tracking.layanan || ''}</li>
+        <li>No. Resi: <strong>${tracking.no_resi}</strong></li>
+        <li>Status: <strong>${statusLabel(window.STATUS_KIRIM, tracking.status_kirim)}</strong></li>
+        <li>Tanggal Kirim: ${formatTanggal(tracking.tanggal_kirim)}</li>
+        <li>Estimasi Tiba: ${formatTanggal(tracking.estimasi_tiba)}</li>
+        <li>Ongkos Kirim: ${rupiah(tracking.ongkos_kirim)}</li>
+        <li>Berat Paket: ${tracking.total_berat_gram} gram</li>
+      </ul>
+
+      <h3>Riwayat Perjalanan Paket</h3>
+      ${riwayat.length === 0
+        ? '<p>Belum ada riwayat tracking.</p>'
+        : `<table class="table">
+            <thead><tr><th>Waktu</th><th>Lokasi</th><th>Keterangan</th></tr></thead>
+            <tbody>
+              ${riwayat.map(rs => `
+                <tr>
+                  <td>${formatTanggalJam(rs.waktu_update)}</td>
+                  <td>${rs.lokasi || '-'}</td>
+                  <td>${rs.deskripsi}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>`
+      }
+
+      <h3>Alamat Penerima</h3>
+      <ul class="kv-list">
+        <li>Penerima: ${pesanan.penerima}</li>
+        <li>Telepon: ${pesanan.no_hp_penerima}</li>
+        <li>Alamat: ${pesanan.alamat_lengkap}, ${pesanan.kota}, ${pesanan.provinsi} ${pesanan.kode_pos}</li>
+      </ul>
+
+      <h3>Ringkasan Pesanan #TK-${pad(pesanan.id_pesanan, 4)}</h3>
+      <table class="table">
+        <thead><tr><th>Produk</th><th>Jumlah</th><th>Harga Satuan</th></tr></thead>
+        <tbody>
+          ${items.map(it => `
+            <tr>
+              <td>${it.nama_produk}</td>
+              <td>${it.jumlah}</td>
+              <td>${rupiah(it.harga_satuan)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <ul class="kv-list">
+        <li>Subtotal Produk: ${rupiah(pesanan.total_harga)}</li>
+        <li>Ongkos Kirim: ${rupiah(pesanan.ongkos_kirim)}</li>
+        <li>Diskon: - ${rupiah(pesanan.diskon)}</li>
+        <li>Total Bayar: <strong>${rupiah(pesanan.total_tagihan)}</strong></li>
+      </ul>
+
+      ${bayar ? `<p>
+        Pembayaran <strong>${statusLabel(window.STATUS_BAYAR, bayar.status_bayar)}</strong>
+        via ${metodeLabel(bayar.metode, bayar.nama_penyedia)}${bayar.tanggal_bayar
+          ? ' pada ' + formatTanggalJam(bayar.tanggal_bayar) : ''}.
+      </p>` : ''}
+
+      <p><a href="/pesanan/${pesanan.id_pesanan}" class="btn">Buka Pesanan</a></p>
+    `;
+  }
+
+  async function loadTracking() {
+    const params = new URLSearchParams();
+    const q = document.getElementById('fQ').value;
+    const kurir = document.getElementById('fKurir').value;
+    if (q)     params.set('q', q);
+    if (kurir) params.set('kurir', kurir);
+    try {
+      const data = await API.get('/api/pengiriman/track' + (params.toString() ? '?' + params : ''));
+      renderTracking(data);
+    } catch (err) { showError(err.message); }
+  }
+
+  document.getElementById('trackForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    loadTracking();
+  });
+
+  (async () => {
+    await loadKurirStats();
+    const url = new URLSearchParams(location.search);
+    if (url.get('q'))     document.getElementById('fQ').value = url.get('q');
+    if (url.get('kurir')) document.getElementById('fKurir').value = url.get('kurir');
+    await loadTracking();
+  })();
+</script>

@@ -1,29 +1,11 @@
-<% const tabs = [
-  { key: 'semua',          label: 'Semua' },
-  { key: 'menunggu_bayar', label: 'Menunggu Bayar' },
-  { key: 'diproses',       label: 'Diproses' },
-  { key: 'dikirim',        label: 'Dikirim' },
-  { key: 'selesai',        label: 'Selesai' },
-  { key: 'dibatalkan',     label: 'Dibatalkan' }
-]; %>
+<p class="tabs" id="statusTabs">Memuat...</p>
 
-<p class="tabs">
-  <% tabs.forEach((t, i) => { %>
-    <% if (i > 0) { %> | <% } %>
-    <a
-      href="/pesanan<%= t.key === 'semua' ? '' : `?status=${t.key}` %>"
-      class="tab <%= filters.status === t.key ? 'active' : '' %>">
-      <%= t.label %> (<%= Number(counts[t.key] || 0).toLocaleString('id-ID') %>)
-    </a>
-  <% }) %>
-</p>
-
-<form method="GET" action="/pesanan">
-  <input type="hidden" name="status" value="<%= filters.status %>">
+<form id="filterForm">
   <div class="filter-bar">
+    <input type="hidden" id="fStatus">
     <label>
       Cari:
-      <input type="text" name="q" value="<%= filters.q %>" placeholder="ID atau nama pelanggan...">
+      <input type="text" id="fQ" placeholder="ID atau nama pelanggan...">
     </label>
     <button type="submit" class="btn">Filter</button>
   </div>
@@ -42,33 +24,106 @@
       <th>Aksi</th>
     </tr>
   </thead>
-  <tbody>
-    <% if (!pesanan.length) { %>
-      <tr><td colspan="8">Tidak ada pesanan untuk filter ini.</td></tr>
-    <% } %>
-    <% pesanan.forEach(o => { %>
-      <tr>
-        <td>#TK-<%= String(o.id_pesanan).padStart(4, '0') %></td>
-        <td>
-          <%= o.pelanggan_nama %><br>
-          <small><%= o.pelanggan_email %></small>
-        </td>
-        <td><%= formatTanggal(o.tanggal_pesan) %></td>
-        <td><%= rupiah(o.total_tagihan) %></td>
-        <td>
-          <% if (o.bayar_metode) { %>
-            <%= metodeLabel(o.bayar_metode, o.bayar_penyedia) %><br>
-            <small><%= STATUS_BAYAR[o.status_bayar] || o.status_bayar %></small>
-          <% } else { %>
-            -
-          <% } %>
-        </td>
-        <td><%= o.kode_kurir || '-' %></td>
-        <td><%= STATUS_PESANAN[o.status_pesanan] || o.status_pesanan %></td>
-        <td><a href="/pesanan/<%= o.id_pesanan %>">Lihat</a></td>
-      </tr>
-    <% }) %>
+  <tbody id="rows">
+    <tr><td colspan="8">Memuat...</td></tr>
   </tbody>
 </table>
 
-<p class="text-muted">Menampilkan <%= pesanan.length %> dari <%= counts.semua %> pesanan.</p>
+<p class="text-muted" id="resultInfo"></p>
+
+<script>
+  const TABS = [
+    { key: 'semua',          label: 'Semua' },
+    { key: 'menunggu_bayar', label: 'Menunggu Bayar' },
+    { key: 'diproses',       label: 'Diproses' },
+    { key: 'dikirim',        label: 'Dikirim' },
+    { key: 'selesai',        label: 'Selesai' },
+    { key: 'dibatalkan',     label: 'Dibatalkan' }
+  ];
+
+  function pad(n, w) { return String(n).padStart(w, '0'); }
+
+  async function loadCounts(activeKey) {
+    const counts = await API.get('/api/pesanan/counts');
+    const wrap = document.getElementById('statusTabs');
+    clear(wrap);
+    TABS.forEach((t, i) => {
+      if (i > 0) wrap.appendChild(txt(' | '));
+      const a = el('a', {
+        href: '#',
+        class: 'tab ' + (activeKey === t.key ? 'active' : ''),
+        onclick: (e) => {
+          e.preventDefault();
+          document.getElementById('fStatus').value = t.key;
+          loadAll(t.key);
+        }
+      }, `${t.label} (${counts[t.key] || 0})`);
+      wrap.appendChild(a);
+    });
+    return counts;
+  }
+
+  async function loadList(status, q) {
+    const params = new URLSearchParams();
+    if (status && status !== 'semua') params.set('status', status);
+    if (q) params.set('q', q);
+    return API.get('/api/pesanan' + (params.toString() ? '?' + params : ''));
+  }
+
+  function renderRows(rows) {
+    const tbody = document.getElementById('rows');
+    clear(tbody);
+    if (!rows.length) {
+      tbody.appendChild(el('tr', null, el('td', { colspan: 8 }, 'Tidak ada pesanan.')));
+      return;
+    }
+    for (const o of rows) {
+      const pelangganCell = el('td', null,
+        txt(o.pelanggan_nama), el('br'),
+        el('small', null, o.pelanggan_email)
+      );
+
+      const bayarCell = el('td');
+      if (o.bayar_metode) {
+        bayarCell.appendChild(txt(metodeLabel(o.bayar_metode, o.bayar_penyedia)));
+        bayarCell.appendChild(el('br'));
+        bayarCell.appendChild(el('small', null, statusLabel(window.STATUS_BAYAR, o.status_bayar)));
+      } else {
+        bayarCell.appendChild(txt('-'));
+      }
+
+      tbody.appendChild(el('tr', null,
+        el('td', null, '#TK-' + pad(o.id_pesanan, 4)),
+        pelangganCell,
+        el('td', null, formatTanggal(o.tanggal_pesan)),
+        el('td', null, rupiah(o.total_tagihan)),
+        bayarCell,
+        el('td', null, o.kode_kurir || '-'),
+        el('td', null, statusLabel(window.STATUS_PESANAN, o.status_pesanan)),
+        el('td', null, el('a', { href: '/pesanan/' + o.id_pesanan }, 'Lihat'))
+      ));
+    }
+  }
+
+  async function loadAll(status) {
+    try {
+      const q = document.getElementById('fQ').value;
+      const counts = await loadCounts(status);
+      const out = await loadList(status, q);
+      renderRows(out.data);
+      document.getElementById('resultInfo').textContent =
+        `Menampilkan ${out.data.length} dari ${counts.semua} pesanan.`;
+    } catch (err) { showError(err.message); }
+  }
+
+  document.getElementById('filterForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    loadAll(document.getElementById('fStatus').value || 'semua');
+  });
+
+  const url = new URLSearchParams(location.search);
+  const initStatus = url.get('status') || 'semua';
+  document.getElementById('fStatus').value = initStatus;
+  if (url.get('q')) document.getElementById('fQ').value = url.get('q');
+  loadAll(initStatus);
+</script>

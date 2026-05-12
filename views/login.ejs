@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
   <link rel="stylesheet" href="/css/styles.css">
+  <script src="/js/api.js"></script>
 </head>
 <body>
 
@@ -34,41 +35,37 @@
       <h1>Masuk</h1>
       <p>Silakan masuk ke akun admin Anda.</p>
 
-      <% if (flash.success && flash.success.length) { %>
-        <div class="alert alert-success"><%= flash.success[0] %></div>
-      <% } %>
-      <% if (flash.error && flash.error.length) { %>
-        <div class="alert alert-error"><%= flash.error[0] %></div>
-      <% } %>
+      <div id="flash"></div>
 
-      <form method="POST" action="/login">
+      <form id="loginForm">
         <div class="form-group">
           <label for="email">Email</label>
-          <input
-            id="email"
-            class="form-control"
-            type="email"
-            name="email"
-            value="admin@tokokita.com"
-            required
-            autofocus>
+          <input id="email" class="form-control" type="email" name="email"
+                 value="admin@tokokita.com" required autofocus>
         </div>
-
         <div class="form-group">
           <label for="password">Password</label>
-          <input
-            id="password"
-            class="form-control"
-            type="password"
-            name="password"
-            required>
+          <input id="password" class="form-control" type="password" name="password" required>
         </div>
-
         <button type="submit" class="btn btn-primary">Masuk</button>
       </form>
     </div>
   </div>
 </div>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email    = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    try {
+      await API.post('/api/auth/login', { email, password });
+      location.href = '/';
+    } catch (err) {
+      showError(err.message);
+    }
+  });
+</script>
 
 </body>
 </html>

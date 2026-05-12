@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= typeof title !== 'undefined' ? title : 'TokoKita Admin' %></title>
   <link rel="stylesheet" href="/css/styles.css">
+  <script>
+    window.STATUS_PESANAN = <%- JSON.stringify(STATUS_PESANAN) %>;
+    window.STATUS_KIRIM   = <%- JSON.stringify(STATUS_KIRIM) %>;
+    window.STATUS_BAYAR   = <%- JSON.stringify(STATUS_BAYAR) %>;
+    window.CURRENT_USER   = <%- JSON.stringify(currentUser || null) %>;
+  </script>
+  <script src="/js/api.js"></script>
 </head>
 <body>
 
@@ -18,13 +25,7 @@
     }) %>
 
     <div class="content">
-      <% if (flash.success && flash.success.length) { %>
-        <div class="alert alert-success"><%= flash.success[0] %></div>
-      <% } %>
-      <% if (flash.error && flash.error.length) { %>
-        <div class="alert alert-error"><%= flash.error[0] %></div>
-      <% } %>
-
+      <div id="flash"></div>
       <%- body %>
     </div>
   </div>

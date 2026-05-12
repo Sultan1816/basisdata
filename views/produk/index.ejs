@@ -1,51 +1,39 @@
 <h3>Ringkasan Produk</h3>
-<ul class="kv-list">
-  <li>Total Produk: <strong><%= counts.total_produk %></strong></li>
-  <li>Kategori Aktif: <strong><%= counts.kategori_aktif %></strong></li>
-  <li>Stok Rendah: <strong><%= counts.stok_rendah %></strong></li>
-  <li>Stok Habis: <strong><%= counts.stok_habis %></strong></li>
+<ul class="kv-list" id="productCounts">
+  <li>Memuat...</li>
 </ul>
 
-<form method="GET" action="/produk">
+<form id="filterForm">
   <div class="filter-bar">
     <label>
       Kategori:
-      <select name="kategori" onchange="this.form.submit()">
-        <option value="">Semua (<%= totalProduk %>)</option>
-        <% kategoriList.forEach(k => { %>
-          <option value="<%= k.id_kategori %>" <%= String(filters.kategori) === String(k.id_kategori) ? 'selected' : '' %>>
-            <%= k.nama_kategori %> (<%= k.total %>)
-          </option>
-        <% }) %>
+      <select name="kategori" id="fKategori">
+        <option value="">Semua</option>
       </select>
     </label>
-
     <label>
       Stok:
-      <select name="stok" onchange="this.form.submit()">
+      <select name="stok" id="fStok">
         <option value="">Semua</option>
-        <option value="tersedia" <%= filters.stok === 'tersedia' ? 'selected' : '' %>>Tersedia</option>
-        <option value="rendah"   <%= filters.stok === 'rendah'   ? 'selected' : '' %>>Stok Rendah</option>
-        <option value="habis"    <%= filters.stok === 'habis'    ? 'selected' : '' %>>Habis</option>
+        <option value="tersedia">Tersedia</option>
+        <option value="rendah">Stok Rendah</option>
+        <option value="habis">Habis</option>
       </select>
     </label>
-
     <label>
       Urutkan:
-      <select name="sort" onchange="this.form.submit()">
+      <select name="sort" id="fSort">
         <option value="">Default</option>
-        <option value="nama_asc"    <%= filters.sort === 'nama_asc'    ? 'selected' : '' %>>Nama A-Z</option>
-        <option value="termurah"    <%= filters.sort === 'termurah'    ? 'selected' : '' %>>Harga Termurah</option>
-        <option value="termahal"    <%= filters.sort === 'termahal'    ? 'selected' : '' %>>Harga Termahal</option>
-        <option value="stok_rendah" <%= filters.sort === 'stok_rendah' ? 'selected' : '' %>>Stok Rendah</option>
+        <option value="nama_asc">Nama A-Z</option>
+        <option value="termurah">Harga Termurah</option>
+        <option value="termahal">Harga Termahal</option>
+        <option value="stok_rendah">Stok Rendah</option>
       </select>
     </label>
-
     <label>
       Cari:
-      <input type="text" name="q" value="<%= filters.q %>" placeholder="Nama produk...">
+      <input type="text" name="q" id="fQ" placeholder="Nama produk...">
     </label>
-
     <button type="submit" class="btn">Terapkan</button>
     <a href="/produk/baru" class="btn btn-primary">Tambah Produk</a>
   </div>
@@ -63,32 +51,94 @@
       <th>Aksi</th>
     </tr>
   </thead>
-  <tbody>
-    <% if (!products.length) { %>
-      <tr><td colspan="7">Tidak ada produk.</td></tr>
-    <% } %>
-    <% products.forEach(p => {
-      let stokLabel = 'Tersedia';
-      if (p.stok === 0)        stokLabel = 'Habis';
-      else if (p.stok <= 10)   stokLabel = 'Stok Rendah';
-    %>
-      <tr>
-        <td><%= p.nama_produk %></td>
-        <td><%= p.nama_kategori %></td>
-        <td><%= rupiah(p.harga) %></td>
-        <td><%= p.stok %> unit</td>
-        <td><%= p.berat_gram %> g</td>
-        <td><%= stokLabel %></td>
-        <td>
-          <a href="/produk/<%= p.id_produk %>/edit">Edit</a>
-          |
-          <form method="POST" action="/produk/<%= p.id_produk %>/hapus" class="inline-form" onsubmit="return confirm('Hapus produk ini?')">
-            <button type="submit" class="link-btn">Hapus</button>
-          </form>
-        </td>
-      </tr>
-    <% }) %>
+  <tbody id="productRows">
+    <tr><td colspan="7">Memuat...</td></tr>
   </tbody>
 </table>
 
-<p class="text-muted">Menampilkan <%= products.length %> dari <%= totalProduk %> produk.</p>
+<p class="text-muted" id="resultInfo"></p>
+
+<script>
+  async function loadKategori() {
+    try {
+      const kategori = await API.get('/api/kategori');
+      const sel = document.getElementById('fKategori');
+      for (const k of kategori) {
+        sel.appendChild(el('option', { value: k.id_kategori }, `${k.nama_kategori} (${k.total})`));
+      }
+      const url = new URLSearchParams(location.search);
+      if (url.get('kategori')) sel.value = url.get('kategori');
+    } catch (err) { showError(err.message); }
+  }
+
+  async function loadProducts() {
+    const params = new URLSearchParams({
+      q:        document.getElementById('fQ').value,
+      kategori: document.getElementById('fKategori').value,
+      stok:     document.getElementById('fStok').value,
+      sort:     document.getElementById('fSort').value
+    });
+    for (const k of [...params.keys()]) if (!params.get(k)) params.delete(k);
+
+    try {
+      const out = await API.get('/api/produk?' + params.toString());
+      const c = out.counts;
+      document.getElementById('productCounts').innerHTML = `
+        <li>Total Produk: <strong>${c.total_produk}</strong></li>
+        <li>Kategori Aktif: <strong>${c.kategori_aktif}</strong></li>
+        <li>Stok Rendah: <strong>${c.stok_rendah}</strong></li>
+        <li>Stok Habis: <strong>${c.stok_habis}</strong></li>
+      `;
+
+      const tbody = document.getElementById('productRows');
+      clear(tbody);
+      if (!out.data.length) {
+        tbody.appendChild(el('tr', null, el('td', { colspan: 7 }, 'Tidak ada produk.')));
+      } else {
+        for (const p of out.data) {
+          let stok = 'Tersedia';
+          if (p.stok === 0)      stok = 'Habis';
+          else if (p.stok <= 10) stok = 'Stok Rendah';
+
+          const editLink = el('a', { href: `/produk/${p.id_produk}/edit` }, 'Edit');
+          const delBtn = el('button', {
+            class: 'link-btn',
+            onclick: async () => {
+              if (!confirm('Hapus produk ini?')) return;
+              try {
+                await API.del('/api/produk/' + p.id_produk);
+                showSuccess('Produk dihapus.');
+                loadProducts();
+              } catch (err) { showError(err.message); }
+            }
+          }, 'Hapus');
+
+          tbody.appendChild(el('tr', null,
+            el('td', null, p.nama_produk),
+            el('td', null, p.nama_kategori),
+            el('td', null, rupiah(p.harga)),
+            el('td', null, p.stok + ' unit'),
+            el('td', null, p.berat_gram + ' g'),
+            el('td', null, stok),
+            el('td', null, editLink, ' | ', delBtn)
+          ));
+        }
+      }
+      document.getElementById('resultInfo').textContent =
+        `Menampilkan ${out.data.length} dari ${c.total_produk} produk.`;
+    } catch (err) { showError(err.message); }
+  }
+
+  document.getElementById('filterForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    loadProducts();
+  });
+  document.getElementById('fKategori').addEventListener('change', loadProducts);
+  document.getElementById('fStok').addEventListener('change', loadProducts);
+  document.getElementById('fSort').addEventListener('change', loadProducts);
+
+  (async () => {
+    await loadKategori();
+    await loadProducts();
+  })();
+</script>

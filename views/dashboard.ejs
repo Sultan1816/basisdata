@@ -1,14 +1,11 @@
 <div class="welcome-banner">
-  <h2>Selamat datang, <%= currentUser ? currentUser.nama : 'Admin' %></h2>
+  <h2 id="welcomeText">Selamat datang</h2>
   <p>Ringkasan aktivitas TokoKita.</p>
 </div>
 
 <h3>Statistik Hari Ini</h3>
-<ul class="kv-list">
-  <li>Total Pesanan: <strong><%= Number(stats.total_pesanan || 0).toLocaleString('id-ID') %></strong></li>
-  <li>Sedang Dikirim: <strong><%= Number(stats.sedang_dikirim || 0).toLocaleString('id-ID') %></strong></li>
-  <li>Pesanan Selesai: <strong><%= Number(stats.pesanan_selesai || 0).toLocaleString('id-ID') %></strong></li>
-  <li>Pendapatan Kotor: <strong><%= rupiahShort(stats.pendapatan) %></strong></li>
+<ul class="kv-list" id="statsList">
+  <li>Memuat...</li>
 </ul>
 
 <h3>Pesanan Terbaru</h3>
@@ -21,19 +18,46 @@
       <th>Status</th>
     </tr>
   </thead>
-  <tbody>
-    <% if (!recentOrders.length) { %>
-      <tr><td colspan="4">Belum ada pesanan.</td></tr>
-    <% } %>
-    <% recentOrders.forEach(o => { %>
-      <tr>
-        <td><%= o.pelanggan %></td>
-        <td><%= o.produk_utama || '-' %></td>
-        <td><%= rupiah(o.total_tagihan) %></td>
-        <td><%= STATUS_PESANAN[o.status_pesanan] || o.status_pesanan %></td>
-      </tr>
-    <% }) %>
+  <tbody id="recentOrders">
+    <tr><td colspan="4">Memuat...</td></tr>
   </tbody>
 </table>
 
 <p><a href="/pesanan">Lihat semua pesanan</a></p>
+
+<script>
+  (async () => {
+    if (window.CURRENT_USER) {
+      document.getElementById('welcomeText').textContent =
+        'Selamat datang, ' + window.CURRENT_USER.nama;
+    }
+
+    try {
+      const stats = await API.get('/api/dashboard/stats');
+      document.getElementById('statsList').innerHTML = `
+        <li>Total Pesanan: <strong>${Number(stats.total_pesanan || 0).toLocaleString('id-ID')}</strong></li>
+        <li>Sedang Dikirim: <strong>${Number(stats.sedang_dikirim || 0).toLocaleString('id-ID')}</strong></li>
+        <li>Pesanan Selesai: <strong>${Number(stats.pesanan_selesai || 0).toLocaleString('id-ID')}</strong></li>
+        <li>Pendapatan Kotor: <strong>${rupiahShort(stats.pendapatan)}</strong></li>
+      `;
+    } catch (err) { showError(err.message); }
+
+    try {
+      const orders = await API.get('/api/dashboard/recent-orders');
+      const tbody = document.getElementById('recentOrders');
+      clear(tbody);
+      if (!orders.length) {
+        tbody.appendChild(el('tr', null, el('td', { colspan: 4 }, 'Belum ada pesanan.')));
+        return;
+      }
+      for (const o of orders) {
+        tbody.appendChild(el('tr', null,
+          el('td', null, o.pelanggan),
+          el('td', null, o.produk_utama || '-'),
+          el('td', null, rupiah(o.total_tagihan)),
+          el('td', null, statusLabel(window.STATUS_PESANAN, o.status_pesanan))
+        ));
+      }
+    } catch (err) { showError(err.message); }
+  })();
+</script>
