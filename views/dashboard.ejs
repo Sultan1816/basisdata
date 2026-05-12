@@ -1,111 +1,39 @@
 <div class="welcome-banner">
-  <div>
-    <h2>Selamat datang kembali, <%= currentUser ? currentUser.nama.split(' ')[0] : 'Admin' %></h2>
-    <p>Berikut ringkasan aktivitas TokoKita hari ini.</p>
-  </div>
-  <a href="/produk/baru" class="btn btn-primary">Tambah Produk</a>
+  <h2>Selamat datang, <%= currentUser ? currentUser.nama : 'Admin' %></h2>
+  <p>Ringkasan aktivitas TokoKita.</p>
 </div>
 
-<div class="stat-grid">
-  <div class="stat-card">
-    <div class="stat-top">
-      <div class="stat-label">Total Pesanan</div>
-      <span class="badge-trend">+12.5%</span>
-    </div>
-    <div class="stat-value"><%= Number(stats.total_pesanan || 0).toLocaleString('id-ID') %></div>
-  </div>
+<h3>Statistik Hari Ini</h3>
+<ul class="kv-list">
+  <li>Total Pesanan: <strong><%= Number(stats.total_pesanan || 0).toLocaleString('id-ID') %></strong></li>
+  <li>Sedang Dikirim: <strong><%= Number(stats.sedang_dikirim || 0).toLocaleString('id-ID') %></strong></li>
+  <li>Pesanan Selesai: <strong><%= Number(stats.pesanan_selesai || 0).toLocaleString('id-ID') %></strong></li>
+  <li>Pendapatan Kotor: <strong><%= rupiahShort(stats.pendapatan) %></strong></li>
+</ul>
 
-  <div class="stat-card">
-    <div class="stat-top">
-      <div class="stat-label">Sedang Dikirim</div>
-      <span class="badge-trend">+3.2%</span>
-    </div>
-    <div class="stat-value"><%= Number(stats.sedang_dikirim || 0).toLocaleString('id-ID') %></div>
-  </div>
+<h3>Pesanan Terbaru</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Pelanggan</th>
+      <th>Produk</th>
+      <th>Total</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!recentOrders.length) { %>
+      <tr><td colspan="4">Belum ada pesanan.</td></tr>
+    <% } %>
+    <% recentOrders.forEach(o => { %>
+      <tr>
+        <td><%= o.pelanggan %></td>
+        <td><%= o.produk_utama || '-' %></td>
+        <td><%= rupiah(o.total_tagihan) %></td>
+        <td><%= statusLabel(STATUS_PESANAN, o.status_pesanan) %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
 
-  <div class="stat-card">
-    <div class="stat-top">
-      <div class="stat-label">Pesanan Selesai</div>
-      <span class="badge-trend">+18.7%</span>
-    </div>
-    <div class="stat-value"><%= Number(stats.pesanan_selesai || 0).toLocaleString('id-ID') %></div>
-  </div>
-
-  <div class="stat-card">
-    <div class="stat-top">
-      <div class="stat-label">Pendapatan Kotor</div>
-      <span class="badge-trend">+24.1%</span>
-    </div>
-    <div class="stat-value"><%= rupiahShort(stats.pendapatan) %></div>
-  </div>
-</div>
-
-<div class="grid-2">
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <h3>Statistik Pengiriman</h3>
-        <small>7 hari terakhir per kurir</small>
-      </div>
-      <div class="tabs">
-        <span class="tab active">7 Hari</span>
-        <span class="tab">30 Hari</span>
-        <span class="tab">90 Hari</span>
-      </div>
-    </div>
-
-    <div class="chart-legend">
-      <span class="leg jne"><span class="dot"></span> JNE</span>
-      <span class="leg jnt"><span class="dot"></span> J&amp;T</span>
-      <span class="leg sicepat"><span class="dot"></span> SiCepat</span>
-    </div>
-
-    <div class="chart-area">
-      <% chart.forEach(c => {
-        const max = 240;
-        const hJne = Math.min(c.jne, max);
-        const hJnt = Math.min(c.jnt, max);
-        const hSic = Math.min(c.sicepat, max);
-      %>
-        <div class="chart-col">
-          <div class="bars">
-            <div class="bar jne" style="height: <%= hJne %>px"></div>
-            <div class="bar jnt" style="height: <%= hJnt %>px"></div>
-            <div class="bar sicepat" style="height: <%= hSic %>px"></div>
-          </div>
-          <div class="day-label"><%= c.day %></div>
-        </div>
-      <% }) %>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-header">
-      <h3>Pesanan Terbaru</h3>
-      <a href="/pesanan" class="link">Lihat Semua</a>
-    </div>
-
-    <div class="order-list">
-      <% if (!recentOrders.length) { %>
-        <div class="empty-state">Belum ada pesanan.</div>
-      <% } %>
-      <% recentOrders.forEach(o => {
-        const s = STATUS_PESANAN[o.status_pesanan] || { label: o.status_pesanan, class: '' };
-      %>
-        <div class="order-row">
-          <div class="left">
-            <div class="avatar-circle"><%= initials(o.pelanggan) %></div>
-            <div>
-              <strong><%= o.pelanggan %></strong>
-              <small><%= o.produk_utama || '-' %></small>
-            </div>
-          </div>
-          <div class="right">
-            <span class="price"><%= rupiah(o.total_tagihan) %></span>
-            <span class="badge"><%= s.label %></span>
-          </div>
-        </div>
-      <% }) %>
-    </div>
-  </div>
-</div>
+<p><a href="/pesanan">Lihat semua pesanan</a></p>

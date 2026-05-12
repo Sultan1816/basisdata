@@ -1,8 +1,6 @@
-<div class="card card-pad center-card">
-  <h2 class="mt-0">Terjadi Kesalahan</h2>
-  <p class="text-muted">Sistem mengalami kendala saat memproses permintaan Anda.</p>
-  <% if (process.env.NODE_ENV !== 'production' && error) { %>
-    <pre class="error-trace"><%= error.stack || error.message %></pre>
-  <% } %>
-  <a href="/" class="btn btn-primary mt-4">Kembali ke Dashboard</a>
-</div>
+<h2>Terjadi Kesalahan</h2>
+<p>Sistem mengalami kendala saat memproses permintaan Anda.</p>
+<% if (process.env.NODE_ENV !== 'production' && error) { %>
+  <pre class="error-trace"><%= error.stack || error.message %></pre>
+<% } %>
+<p><a href="/">Kembali ke Dashboard</a></p>

@@ -1,87 +1,73 @@
-<div class="tracking-grid">
-  <div>
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <h3>Pesanan #TK-<%= String(pesanan.id_pesanan).padStart(4, '0') %></h3>
-          <small><%= formatTanggalJam(pesanan.tanggal_pesan) %></small>
-        </div>
-        <% const sp = STATUS_PESANAN[pesanan.status_pesanan] || { label: pesanan.status_pesanan }; %>
-        <span class="badge"><%= sp.label %></span>
-      </div>
+<h2>Pesanan #TK-<%= String(pesanan.id_pesanan).padStart(4, '0') %></h2>
+<p class="text-muted">
+  <%= formatTanggalJam(pesanan.tanggal_pesan) %>
+  - Status: <strong><%= statusLabel(STATUS_PESANAN, pesanan.status_pesanan) %></strong>
+</p>
 
-      <div class="card-pad">
-        <h4 class="mt-0">Produk Dipesan</h4>
+<h3>Produk Dipesan</h3>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Produk</th>
+      <th>Jumlah</th>
+      <th>Harga Satuan</th>
+      <th>Subtotal</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% items.forEach(it => { %>
+      <tr>
+        <td><%= it.nama_produk %></td>
+        <td><%= it.jumlah %></td>
+        <td><%= rupiah(it.harga_satuan) %></td>
+        <td><%= rupiah(it.subtotal) %></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
 
-        <% items.forEach(it => { %>
-          <div class="prod-line">
-            <div class="prod-info">
-              <strong><%= it.nama_produk %></strong>
-              <small><%= it.jumlah %>x &middot; <%= rupiah(it.harga_satuan) %></small>
-            </div>
-            <div class="text-right"><strong><%= rupiah(it.subtotal) %></strong></div>
-          </div>
-        <% }) %>
+<ul class="kv-list">
+  <li>Subtotal Produk: <strong><%= rupiah(pesanan.total_harga) %></strong></li>
+  <li>Ongkos Kirim: <strong><%= rupiah(pesanan.ongkos_kirim) %></strong></li>
+  <li>Diskon: <strong>- <%= rupiah(pesanan.diskon) %></strong></li>
+  <li>Total Tagihan: <strong><%= rupiah(pesanan.total_tagihan) %></strong></li>
+</ul>
 
-        <hr class="soft">
+<h3>Alamat Penerima</h3>
+<ul class="kv-list">
+  <li>Label: <%= pesanan.label %></li>
+  <li>Penerima: <%= pesanan.penerima %></li>
+  <li>Telepon: <%= pesanan.no_hp_penerima %></li>
+  <li>Alamat: <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %></li>
+</ul>
 
-        <div class="totline"><span class="label">Subtotal Produk</span><span><%= rupiah(pesanan.total_harga) %></span></div>
-        <div class="totline"><span class="label">Ongkos Kirim</span><span><%= rupiah(pesanan.ongkos_kirim) %></span></div>
-        <div class="totline"><span class="label">Diskon</span><span>- <%= rupiah(pesanan.diskon) %></span></div>
-        <div class="totline total"><span class="label">Total Tagihan</span><strong><%= rupiah(pesanan.total_tagihan) %></strong></div>
-      </div>
-    </div>
+<% if (bayar) { %>
+  <h3>Pembayaran</h3>
+  <ul class="kv-list">
+    <li>Metode: <%= metodeLabel(bayar.metode, bayar.nama_penyedia) %></li>
+    <li>Jumlah Bayar: <%= rupiah(bayar.jumlah_bayar) %></li>
+    <li>Tanggal: <%= bayar.tanggal_bayar ? formatTanggalJam(bayar.tanggal_bayar) : '-' %></li>
+    <li>Status: <%= statusLabel(STATUS_BAYAR, bayar.status_bayar) %></li>
+  </ul>
+<% } %>
 
-    <div class="card card-pad">
-      <h3 class="mt-0">Ubah Status Pesanan</h3>
-      <form method="POST" action="/pesanan/<%= pesanan.id_pesanan %>/status" class="form-inline">
-        <select name="status" class="form-control select-sm">
-          <% Object.entries(STATUS_PESANAN).forEach(([key, v]) => { %>
-            <option value="<%= key %>" <%= pesanan.status_pesanan === key ? 'selected' : '' %>><%= v.label %></option>
-          <% }) %>
-        </select>
-        <button type="submit" class="btn btn-primary">Update Status</button>
-        <a href="/pesanan" class="btn">Kembali</a>
-      </form>
-    </div>
-  </div>
+<% if (kirim) { %>
+  <h3>Pengiriman</h3>
+  <ul class="kv-list">
+    <li>Kurir: <%= kirim.kode_kurir %> <%= kirim.layanan || '' %></li>
+    <li>No. Resi: <%= kirim.no_resi %></li>
+    <li>Status: <%= statusLabel(STATUS_KIRIM, kirim.status_kirim) %></li>
+  </ul>
+  <p><a href="/pengiriman?q=<%= kirim.no_resi %>">Lacak paket</a></p>
+<% } %>
 
-  <div class="tracking-right">
-    <div class="card card-pad recipient">
-      <h4 class="mt-0">Alamat Penerima</h4>
-      <hr class="soft">
-      <div class="name"><%= pesanan.penerima %></div>
-      <div class="ph"><%= pesanan.no_hp_penerima %></div>
-      <div class="addr">
-        <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %>
-      </div>
-      <div class="mt-2"><span class="badge"><%= pesanan.label %></span></div>
-    </div>
-
-    <% if (bayar) {
-      const sb = STATUS_BAYAR[bayar.status_bayar] || { label: bayar.status_bayar };
-    %>
-      <div class="card card-pad">
-        <h4 class="mt-0">Pembayaran</h4>
-        <hr class="soft">
-        <div class="totline"><span class="label">Metode</span><strong><%= metodeLabel(bayar.metode, bayar.nama_penyedia) %></strong></div>
-        <div class="totline"><span class="label">Jumlah Bayar</span><strong><%= rupiah(bayar.jumlah_bayar) %></strong></div>
-        <div class="totline"><span class="label">Tanggal</span><span><%= bayar.tanggal_bayar ? formatTanggalJam(bayar.tanggal_bayar) : '-' %></span></div>
-        <div class="mt-2"><span class="badge"><%= sb.label %></span></div>
-      </div>
-    <% } %>
-
-    <% if (kirim) {
-      const sk = STATUS_KIRIM[kirim.status_kirim] || { label: kirim.status_kirim };
-    %>
-      <div class="card card-pad">
-        <h4 class="mt-0">Pengiriman</h4>
-        <hr class="soft">
-        <div class="totline"><span class="label">Kurir</span><strong><%= kirim.kode_kurir %> <%= kirim.layanan || '' %></strong></div>
-        <div class="totline"><span class="label">No. Resi</span><strong><%= kirim.no_resi %></strong></div>
-        <div class="mt-2"><span class="badge"><%= sk.label %></span></div>
-        <a href="/pengiriman?q=<%= kirim.no_resi %>" class="btn btn-block mt-4">Lacak Paket</a>
-      </div>
-    <% } %>
-  </div>
-</div>
+<h3>Ubah Status Pesanan</h3>
+<form method="POST" action="/pesanan/<%= pesanan.id_pesanan %>/status">
+  <select name="status" class="form-control">
+    <% Object.entries(STATUS_PESANAN).forEach(([key, label]) => { %>
+      <option value="<%= key %>" <%= pesanan.status_pesanan === key ? 'selected' : '' %>><%= label %></option>
+    <% }) %>
+  </select>
+  <button type="submit" class="btn btn-primary">Update Status</button>
+  <a href="/pesanan" class="btn">Kembali</a>
+</form>
