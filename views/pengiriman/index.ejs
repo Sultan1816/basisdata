@@ -1,6 +1,5 @@
-<!-- Hero search -->
 <div class="hero-search">
-  <h2>🚚 Lacak Paket Multi-Kurir</h2>
+  <h2>Lacak Paket Multi-Kurir</h2>
   <p>Pantau status pengiriman dari JNE, J&amp;T, dan SiCepat dalam satu dashboard terintegrasi.</p>
   <form method="GET" action="/pengiriman" class="search-row">
     <select name="kurir">
@@ -10,26 +9,21 @@
       <% }) %>
     </select>
     <input type="text" name="q" placeholder="Masukkan nomor resi (contoh: JNE00123456789)" value="<%= filters.q %>">
-    <button type="submit" class="btn">Lacak Paket →</button>
+    <button type="submit" class="btn">Lacak Paket</button>
   </form>
 </div>
 
-<!-- Kurir stats -->
-<% const kurirColorMap = { JNE:'jne','J&T':'jnt','SiCepat':'sicepat' }; %>
-<div class="grid-4 mt-6 mb-6">
+<div class="grid-4 mb-4">
   <% kurirStats.forEach(k => {
     const pct = k.total > 0 ? Math.round((k.terkirim / k.total) * 100) : 0;
-    const cls = kurirColorMap[k.kode_kurir] || 'total';
   %>
     <div class="stat-card kurir-stat">
-      <div class="flex items-center gap-3">
-        <span class="kurir-badge <%= kurirClass(k.kode_kurir) %>"><%= k.kode_kurir %></span>
-        <div>
-          <strong style="display:block;"><%= k.nama_kurir %></strong>
-          <small class="text-muted"><%= k.total %> paket</small>
-        </div>
+      <div class="stat-top">
+        <strong><%= k.nama_kurir %></strong>
+        <span class="badge"><%= k.kode_kurir %></span>
       </div>
-      <div class="progress <%= cls %>"><i style="width: <%= pct %>%"></i></div>
+      <div class="stat-sub"><%= k.total %> paket</div>
+      <div class="progress"><i style="width: <%= pct %>%"></i></div>
       <div class="splits">
         <div><strong><%= k.terkirim %></strong><small>Terkirim</small></div>
         <div class="text-right"><strong><%= k.perjalanan %></strong><small>Dalam Perjalanan</small></div>
@@ -37,17 +31,19 @@
     </div>
   <% }) %>
 
-  <% const tot = kurirStats.reduce((a,k)=>({total:a.total+k.total, terkirim:a.terkirim+k.terkirim, perjalanan:a.perjalanan+k.perjalanan}), {total:0,terkirim:0,perjalanan:0});
+  <% const tot = kurirStats.reduce((a, k) => ({
+        total: a.total + k.total,
+        terkirim: a.terkirim + k.terkirim,
+        perjalanan: a.perjalanan + k.perjalanan
+     }), { total: 0, terkirim: 0, perjalanan: 0 });
      const totPct = tot.total > 0 ? Math.round((tot.terkirim / tot.total) * 100) : 0; %>
   <div class="stat-card kurir-stat">
-    <div class="flex items-center gap-3">
-      <div class="icon-wrap bg-primary" style="width:34px;height:34px;">📦</div>
-      <div>
-        <strong style="display:block;">Total Aktif</strong>
-        <small class="text-muted"><%= tot.total %> paket</small>
-      </div>
+    <div class="stat-top">
+      <strong>Total Aktif</strong>
+      <span class="badge">SEMUA</span>
     </div>
-    <div class="progress total"><i style="width: <%= totPct %>%"></i></div>
+    <div class="stat-sub"><%= tot.total %> paket</div>
+    <div class="progress"><i style="width: <%= totPct %>%"></i></div>
     <div class="splits">
       <div><strong><%= tot.terkirim %></strong><small>Terkirim</small></div>
       <div class="text-right"><strong><%= tot.perjalanan %></strong><small>Dalam Perjalanan</small></div>
@@ -55,143 +51,121 @@
   </div>
 </div>
 
-<!-- Tracking detail -->
 <% if (tracking) {
-  const sk = STATUS_KIRIM[tracking.status_kirim] || { label: tracking.status_kirim, class: 'badge-info' };
-  // Map steps: each riwayat is a step; mark currentIndex based on tracking.status_kirim
-  const stepStatuses = ['diproses','dalam_perjalanan','tiba_di_kota','out_for_delivery','terkirim'];
-  const currentIdx = stepStatuses.indexOf(tracking.status_kirim);
+  const sk = STATUS_KIRIM[tracking.status_kirim] || { label: tracking.status_kirim };
 %>
-<div class="tracking-grid">
-  <div class="card">
-    <div class="tl-header" style="padding: 24px;">
-      <div>
-        <h3 class="mt-0">Detail Tracking · <span class="kurir-badge <%= kurirClass(tracking.kode_kurir) %>"><%= tracking.kode_kurir %></span> <%= tracking.layanan || '' %></h3>
-        <div class="resi-pill">
-          <span class="pill"><%= tracking.no_resi %></span>
-          <small class="text-muted">Klik untuk salin resi 📋</small>
+  <div class="tracking-grid">
+    <div class="card">
+      <div class="tl-header">
+        <div>
+          <h3 class="mt-0">Detail Tracking &middot; <%= tracking.kode_kurir %> <%= tracking.layanan || '' %></h3>
+          <div class="resi-pill">
+            <span class="pill"><%= tracking.no_resi %></span>
+            <small class="text-muted">Klik untuk salin resi</small>
+          </div>
+        </div>
+        <span class="status-pill"><%= sk.label.toUpperCase() %></span>
+      </div>
+
+      <div class="info-grid">
+        <div class="item"><small>Tanggal Kirim</small><strong><%= formatTanggal(tracking.tanggal_kirim) %></strong></div>
+        <div class="item"><small>Estimasi Tiba</small><strong><%= formatTanggal(tracking.estimasi_tiba) %></strong></div>
+        <div class="item"><small>Ongkos Kirim</small><strong><%= rupiah(tracking.ongkos_kirim) %></strong></div>
+        <div class="item"><small>Berat Paket</small><strong><%= tracking.total_berat_gram %> gram</strong></div>
+      </div>
+
+      <hr class="soft">
+
+      <div class="timeline">
+        <h4 class="mt-0 mb-4">Riwayat Perjalanan Paket</h4>
+        <ul class="timeline-list">
+          <% if (!riwayat.length) { %>
+            <li class="empty-state">Belum ada riwayat tracking.</li>
+          <% } %>
+          <% riwayat.forEach((rs, idx) => {
+            const isLast = idx === riwayat.length - 1;
+            const cls = isLast && tracking.status_kirim !== 'terkirim' ? 'active' : 'done';
+          %>
+            <li class="timeline-step <%= cls %>">
+              <div class="body">
+                <strong><%= rs.deskripsi %></strong>
+                <small><%= formatTanggalJam(rs.waktu_update) %><%= rs.lokasi ? ' &middot; ' + rs.lokasi : '' %></small>
+                <% if (isLast && tracking.status_kirim !== 'terkirim') { %>
+                  <div><span class="posisi-tag">Posisi Terakhir</span></div>
+                <% } %>
+              </div>
+            </li>
+          <% }) %>
+          <% if (tracking.status_kirim !== 'terkirim') { %>
+            <li class="timeline-step">
+              <div class="body">
+                <strong>Paket akan diantar ke alamat penerima</strong>
+                <small>Diperkirakan <%= formatTanggal(tracking.estimasi_tiba) %></small>
+              </div>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tracking-right">
+      <div class="card card-pad recipient">
+        <h4 class="mt-0">Alamat Penerima</h4>
+        <hr class="soft">
+        <div class="name"><%= pesanan.penerima %></div>
+        <div class="ph"><%= pesanan.no_hp_penerima %></div>
+        <div class="addr">
+          <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %>
         </div>
       </div>
-      <span class="status-pill"><span class="pulse"></span> <%= sk.label.toUpperCase() %></span>
-    </div>
 
-    <div class="info-grid" style="padding: 0 24px;">
-      <div class="item">
-        <small>Tanggal Kirim</small>
-        <strong><%= formatTanggal(tracking.tanggal_kirim) %></strong>
-      </div>
-      <div class="item">
-        <small>Estimasi Tiba</small>
-        <strong><%= formatTanggal(tracking.estimasi_tiba) %></strong>
-      </div>
-      <div class="item">
-        <small>Ongkos Kirim</small>
-        <strong><%= rupiah(tracking.ongkos_kirim) %></strong>
-      </div>
-      <div class="item">
-        <small>Berat Paket</small>
-        <strong><%= tracking.total_berat_gram %> gram</strong>
-      </div>
-    </div>
+      <div class="card card-pad summary">
+        <div class="card-row">
+          <h4 class="mt-0">Ringkasan Pesanan</h4>
+          <a href="/pesanan/<%= pesanan.id_pesanan %>" class="link">#TK-<%= String(pesanan.id_pesanan).padStart(4, '0') %></a>
+        </div>
+        <hr class="soft">
 
-    <hr class="soft">
-
-    <div class="timeline">
-      <h4 style="margin: 8px 0 16px;">Riwayat Perjalanan Paket</h4>
-      <div class="timeline-list">
-        <% if (!riwayat.length) { %>
-          <div class="empty-state">Belum ada riwayat tracking.</div>
-        <% }
-           const isActiveStatus = (rs, idx) => {
-             const last = riwayat[riwayat.length-1];
-             return last && last.id_riwayat === rs.id_riwayat;
-           };
-        %>
-        <% riwayat.forEach((rs, idx) => {
-          const isLast = idx === riwayat.length - 1;
-          const cls = isLast && tracking.status_kirim !== 'terkirim' ? 'active' : 'done';
-        %>
-          <div class="timeline-step <%= cls %>">
-            <div class="lc"><div class="dot"></div></div>
-            <% if (!isLast) { %><span class="line"></span><% } %>
-            <div class="body">
-              <strong><%= rs.deskripsi %></strong>
-              <small><%= formatTanggalJam(rs.waktu_update) %><%= rs.lokasi ? ' · ' + rs.lokasi : '' %></small>
-              <% if (isLast && tracking.status_kirim !== 'terkirim') { %>
-                <span class="posisi-tag">📍 Posisi Terakhir</span>
-              <% } %>
+        <% items.forEach(it => { %>
+          <div class="prod">
+            <div class="prod-info">
+              <strong><%= it.nama_produk %></strong>
+              <small><%= it.jumlah %>x &middot; <%= rupiah(it.harga_satuan) %></small>
             </div>
           </div>
         <% }) %>
-        <% if (tracking.status_kirim !== 'terkirim') { %>
-          <div class="timeline-step">
-            <div class="lc"><div class="dot"></div></div>
-            <div class="body">
-              <strong>Paket akan diantar ke alamat penerima</strong>
-              <small>Diperkirakan <%= formatTanggal(tracking.estimasi_tiba) %></small>
+
+        <hr class="soft">
+        <div class="totline"><span class="label">Subtotal Produk</span><span><%= rupiah(pesanan.total_harga) %></span></div>
+        <div class="totline"><span class="label">Ongkos Kirim</span><span><%= rupiah(pesanan.ongkos_kirim) %></span></div>
+        <div class="totline"><span class="label">Diskon</span><span>- <%= rupiah(pesanan.diskon) %></span></div>
+        <hr class="soft">
+        <div class="totline total"><span class="label">Total Bayar</span><strong><%= rupiah(pesanan.total_tagihan) %></strong></div>
+
+        <% if (bayar) {
+          const sb = STATUS_BAYAR[bayar.status_bayar] || { label: bayar.status_bayar };
+        %>
+          <div class="pay-success">
+            <div>
+              <strong>Pembayaran <%= sb.label %></strong>
+              <small>
+                <%= metodeLabel(bayar.metode, bayar.nama_penyedia) %>
+                <%= bayar.tanggal_bayar ? ' &middot; ' + formatTanggalJam(bayar.tanggal_bayar) : '' %>
+              </small>
             </div>
           </div>
         <% } %>
+
+        <div class="form-actions-row mt-4">
+          <a href="#" class="btn">Cetak Label</a>
+          <a href="/pesanan/<%= pesanan.id_pesanan %>" class="btn btn-primary">Update Status</a>
+        </div>
       </div>
     </div>
   </div>
-
-  <div class="tracking-right">
-    <div class="card card-pad recipient">
-      <h4 class="mt-0">📍 Alamat Penerima</h4>
-      <hr class="soft">
-      <div class="name"><%= pesanan.penerima %></div>
-      <div class="ph">📱 <%= pesanan.no_hp_penerima %></div>
-      <div class="addr">
-        <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %>
-      </div>
-    </div>
-
-    <div class="card card-pad summary">
-      <div class="flex justify-between items-center" style="display:flex; justify-content: space-between; align-items: center;">
-        <h4 class="mt-0">📦 Ringkasan Pesanan</h4>
-        <a href="/pesanan/<%= pesanan.id_pesanan %>" class="link">#TK-<%= String(pesanan.id_pesanan).padStart(4,'0') %></a>
-      </div>
-      <hr class="soft">
-      <% items.forEach(it => { %>
-        <div class="prod">
-          <div class="thumb">📦</div>
-          <div style="flex:1">
-            <strong><%= it.nama_produk %></strong>
-            <small><%= it.jumlah %>× · <%= rupiah(it.harga_satuan) %></small>
-          </div>
-        </div>
-      <% }) %>
-      <hr class="soft">
-      <div class="totline"><span class="label">Subtotal Produk</span><span><%= rupiah(pesanan.total_harga) %></span></div>
-      <div class="totline"><span class="label">Ongkos Kirim (<%= tracking.kode_kurir %> <%= tracking.layanan || '' %>)</span><span><%= rupiah(pesanan.ongkos_kirim) %></span></div>
-      <div class="totline"><span class="label">Diskon</span><span>- <%= rupiah(pesanan.diskon) %></span></div>
-      <hr class="soft">
-      <div class="totline total"><span class="label">Total Bayar</span><strong><%= rupiah(pesanan.total_tagihan) %></strong></div>
-
-      <% if (bayar) {
-        const sb = STATUS_BAYAR[bayar.status_bayar] || { label: bayar.status_bayar, class: 'badge-muted' };
-      %>
-        <div class="pay-success">
-          <span style="font-size:18px;">✅</span>
-          <div>
-            <strong>Pembayaran <%= sb.label %></strong>
-            <small><%= metodeLabel(bayar.metode, bayar.nama_penyedia) %><%= bayar.tanggal_bayar ? ' · ' + formatTanggalJam(bayar.tanggal_bayar) : '' %></small>
-          </div>
-        </div>
-      <% } %>
-
-      <div class="flex gap-2 mt-6">
-        <a href="#" class="btn btn-outline" style="flex:1; justify-content: center;">🖨 Cetak Label</a>
-        <a href="/pesanan/<%= pesanan.id_pesanan %>" class="btn btn-primary" style="flex:1; justify-content: center;">Update Status →</a>
-      </div>
-    </div>
-  </div>
-</div>
 <% } else { %>
-<div class="card card-pad empty-state mt-6">
-  <div class="emoji">📭</div>
-  <h3>Tidak ada pengiriman aktif</h3>
-  <p class="text-muted">Masukkan nomor resi di atas untuk melacak paket.</p>
-</div>
+  <div class="card card-pad empty-state">
+    <h3>Tidak ada pengiriman aktif</h3>
+    <p class="text-muted">Masukkan nomor resi di atas untuk melacak paket.</p>
+  </div>
 <% } %>
