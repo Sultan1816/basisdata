@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= title %></title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<div class="login-shell">
+  <div class="login-left">
+    <div class="login-brand">
+      <div class="lb">🛒</div>
+      <div class="lt">
+        <strong>TokoKita</strong>
+        <small>E-Commerce Admin Panel</small>
+      </div>
+    </div>
+
+    <div class="login-hero">
+      <div class="illbox">
+        <div class="cb-grid">
+          <div class="cb"><span class="ic">📦</span><span class="lbl">JNE</span></div>
+          <div class="cb"><span class="ic">📦</span><span class="lbl">J&amp;T</span></div>
+          <div class="cb"><span class="ic">📦</span><span class="lbl">SiCepat</span></div>
+        </div>
+      </div>
+      <h2>Kelola Toko Online Anda dengan Mudah &amp; Cepat</h2>
+      <p>Platform admin terintegrasi dengan fitur multi-kurir tracking real-time. Pantau pesanan, pengiriman, dan pembayaran dalam satu dashboard.</p>
+      <div class="feature-row">
+        <span class="feat"><span class="chk">✓</span> Real-time tracking</span>
+        <span class="feat"><span class="chk">✓</span> Multi-kurir support</span>
+        <span class="feat"><span class="chk">✓</span> Laporan lengkap</span>
+      </div>
+    </div>
+
+    <div class="login-footer">© 2026 TokoKita. All rights reserved.</div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-form-wrap">
+      <h1>Selamat Datang Kembali! 👋</h1>
+      <p>Masuk ke akun admin Anda untuk mengelola TokoKita.</p>
+
+      <% if (flash.success && flash.success.length) { %>
+        <div class="alert alert-success"><%= flash.success[0] %></div>
+      <% } %>
+      <% if (flash.error && flash.error.length) { %>
+        <div class="alert alert-error"><%= flash.error[0] %></div>
+      <% } %>
+
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label>Email</label>
+          <div class="input-with-icon">
+            <input class="form-control" type="email" name="email" placeholder="admin@tokokita.com" required value="admin@tokokita.com" autofocus>
+            <span class="icon">✉️</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <div class="input-with-icon">
+            <input class="form-control" type="password" name="password" id="password" placeholder="••••••••••" required>
+            <span class="icon" style="cursor:pointer" onclick="(()=>{const p=document.getElementById('password');p.type=p.type==='password'?'text':'password';})()">👁</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <label class="checkbox">
+            <input type="checkbox" name="remember">
+            <span>Ingat saya</span>
+          </label>
+          <a href="#" class="link">Lupa password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="height: 56px;">
+          Masuk ke Dashboard <span>→</span>
+        </button>
+      </form>
+
+      <div class="divider">atau</div>
+
+      <div class="text-muted" style="text-align: center;">
+        Belum punya akun? <a href="#" class="link">Daftar Sekarang</a>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<div class="welcome-banner">
+  <div>
+    <h2>Selamat datang kembali, <%= currentUser ? currentUser.nama.split(' ')[0] : 'Admin' %>! 👋</h2>
+    <p>Berikut ringkasan aktivitas TokoKita hari ini.</p>
+  </div>
+  <a href="/produk/baru" class="btn-light btn">+ Tambah Produk</a>
+</div>
+
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-top">
+      <div class="icon-wrap bg-primary">🛒</div>
+      <span class="badge-trend up">▲ +12.5%</span>
+    </div>
+    <div class="stat-value"><%= Number(stats.total_pesanan || 0).toLocaleString('id-ID') %></div>
+    <div class="stat-label">Total Pesanan</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-top">
+      <div class="icon-wrap bg-info">🚚</div>
+      <span class="badge-trend up">▲ +3.2%</span>
+    </div>
+    <div class="stat-value"><%= Number(stats.sedang_dikirim || 0).toLocaleString('id-ID') %></div>
+    <div class="stat-label">Sedang Dikirim</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-top">
+      <div class="icon-wrap bg-success">✅</div>
+      <span class="badge-trend up">▲ +18.7%</span>
+    </div>
+    <div class="stat-value"><%= Number(stats.pesanan_selesai || 0).toLocaleString('id-ID') %></div>
+    <div class="stat-label">Pesanan Selesai</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-top">
+      <div class="icon-wrap bg-warning">💰</div>
+      <span class="badge-trend up">▲ +24.1%</span>
+    </div>
+    <div class="stat-value"><%= rupiahShort(stats.pendapatan) %></div>
+    <div class="stat-label">Pendapatan Kotor</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Chart Card -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <h3>Statistik Pengiriman</h3>
+        <small>7 hari terakhir per kurir</small>
+      </div>
+      <div class="tabs">
+        <span class="tab active">7 Hari</span>
+        <span class="tab">30 Hari</span>
+        <span class="tab">90 Hari</span>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <span class="leg jne"><span class="dot"></span> JNE</span>
+      <span class="leg jnt"><span class="dot"></span> J&amp;T</span>
+      <span class="leg sicepat"><span class="dot"></span> SiCepat</span>
+    </div>
+    <div class="chart-area" style="padding: 0 24px 32px;">
+      <% chart.forEach(c => {
+        const max = 240;
+        const hJne = Math.min(c.jne, max);
+        const hJnt = Math.min(c.jnt, max);
+        const hSic = Math.min(c.sicepat, max);
+      %>
+        <div class="chart-col">
+          <div class="bars">
+            <div class="bar jne" style="height: <%= hJne %>px"></div>
+            <div class="bar jnt" style="height: <%= hJnt %>px"></div>
+            <div class="bar sicepat" style="height: <%= hSic %>px"></div>
+          </div>
+          <div class="day-label"><%= c.day %></div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+
+  <!-- Pesanan Terbaru -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Pesanan Terbaru</h3>
+      <a href="/pesanan" class="link">Lihat Semua →</a>
+    </div>
+    <div class="order-list" style="padding: 8px 24px 16px;">
+      <% if (!recentOrders.length) { %>
+        <div class="empty-state"><div class="emoji">📭</div>Belum ada pesanan.</div>
+      <% } %>
+      <% recentOrders.forEach(o => {
+        const s = STATUS_PESANAN[o.status_pesanan] || { label: o.status_pesanan, class: 'badge-muted' };
+      %>
+        <div class="order-row">
+          <div class="left">
+            <div class="avatar-circle"><%= initials(o.pelanggan) %></div>
+            <div>
+              <strong><%= o.pelanggan %></strong>
+              <small><%= o.produk_utama || '—' %></small>
+            </div>
+          </div>
+          <div class="right">
+            <span class="price"><%= rupiah(o.total_tagihan) %></span>
+            <span class="badge <%= s.class %>"><%= s.label %></span>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</div>

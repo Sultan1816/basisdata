@@ -1,0 +1,146 @@
+<!-- Stat cards -->
+<div class="grid-4 mb-6">
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="icon-wrap bg-primary" style="width:46px;height:46px;font-size:22px;">📦</div>
+      <div>
+        <div class="text-muted" style="font-size:13px;">Total Produk</div>
+        <div class="text-3xl font-bold"><%= counts.total_produk %></div>
+        <div class="text-soft" style="font-size:12px;">+12 bulan ini</div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="icon-wrap bg-purple" style="width:46px;height:46px;font-size:22px;">🏷️</div>
+      <div>
+        <div class="text-muted" style="font-size:13px;">Kategori Aktif</div>
+        <div class="text-3xl font-bold"><%= counts.kategori_aktif %></div>
+        <div class="text-soft" style="font-size:12px;">3 kategori utama</div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="icon-wrap bg-warning" style="width:46px;height:46px;font-size:22px;">⚠️</div>
+      <div>
+        <div class="text-muted" style="font-size:13px;">Stok Rendah</div>
+        <div class="text-3xl font-bold"><%= counts.stok_rendah %></div>
+        <div class="text-soft" style="font-size:12px;">Perlu restock</div>
+      </div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="flex items-center gap-3">
+      <div class="icon-wrap bg-danger" style="width:46px;height:46px;font-size:22px;">🔴</div>
+      <div>
+        <div class="text-muted" style="font-size:13px;">Stok Habis</div>
+        <div class="text-3xl font-bold"><%= counts.stok_habis %></div>
+        <div class="text-soft" style="font-size:12px;">Segera direstock</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Kategori chips -->
+<form method="GET" action="/produk">
+  <div class="chips">
+    <a href="/produk" class="chip <%= !filters.kategori ? 'active' : '' %>">
+      Semua Kategori <span class="count"><%= totalProduk %></span>
+    </a>
+    <% kategoriList.forEach(k => { %>
+      <a href="/produk?kategori=<%= k.id_kategori %>" class="chip <%= String(filters.kategori) === String(k.id_kategori) ? 'active' : '' %>">
+        <%= k.nama_kategori %> <span class="count"><%= k.total %></span>
+      </a>
+    <% }) %>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="search-input">
+        <span>🔍</span>
+        <input type="text" name="q" placeholder="Cari nama produk, SKU, kategori..." value="<%= filters.q %>">
+      </div>
+      <select class="filter-select" name="stok" onchange="this.form.submit()">
+        <option value="">Stok: Semua</option>
+        <option value="tersedia" <%= filters.stok==='tersedia'?'selected':'' %>>Tersedia</option>
+        <option value="rendah"   <%= filters.stok==='rendah'  ?'selected':'' %>>Stok Rendah</option>
+        <option value="habis"    <%= filters.stok==='habis'   ?'selected':'' %>>Habis</option>
+      </select>
+      <select class="filter-select" name="sort" onchange="this.form.submit()">
+        <option value="">Urutkan</option>
+        <option value="nama_asc"   <%= filters.sort==='nama_asc'  ?'selected':'' %>>Nama A-Z</option>
+        <option value="termurah"   <%= filters.sort==='termurah'  ?'selected':'' %>>Harga ↑</option>
+        <option value="termahal"   <%= filters.sort==='termahal'  ?'selected':'' %>>Harga ↓</option>
+        <option value="stok_rendah" <%= filters.sort==='stok_rendah'?'selected':'' %>>Stok Rendah</option>
+      </select>
+    </div>
+    <div class="flex gap-2">
+      <a href="/produk/baru" class="btn btn-primary">+ Tambah Produk</a>
+    </div>
+  </div>
+</form>
+
+<!-- Table -->
+<div class="card table-card">
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width:340px;">Produk</th>
+        <th>Kategori</th>
+        <th>Harga</th>
+        <th>Stok</th>
+        <th>Berat</th>
+        <th>Status</th>
+        <th class="text-right">Aksi</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!products.length) { %>
+        <tr><td colspan="7"><div class="empty-state"><div class="emoji">📦</div>Tidak ada produk.</div></td></tr>
+      <% } %>
+      <% products.forEach((p, i) => {
+        let stokClass = 'badge-success', stokLabel = 'Tersedia', barClass = '';
+        if (p.stok === 0) { stokClass = 'badge-danger'; stokLabel = 'Habis'; barClass = 'danger'; }
+        else if (p.stok <= 10) { stokClass = 'badge-warning'; stokLabel = 'Stok Rendah'; barClass = 'warn'; }
+        const pct = Math.max(2, Math.min(100, p.stok));
+        const sku = `SKU-${String(p.nama_kategori || 'X').charAt(0).toUpperCase()}${String(p.id_produk).padStart(3,'0')}`;
+      %>
+        <tr>
+          <td>
+            <div class="flex items-center gap-3">
+              <div class="product-thumb">📦</div>
+              <div class="cell-product">
+                <strong><%= p.nama_produk %></strong>
+                <small><%= sku %> · Aktif <%= p.is_active ? '✓' : '×' %></small>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-primary"><%= p.nama_kategori %></span></td>
+          <td><strong><%= rupiah(p.harga) %></strong></td>
+          <td>
+            <div><%= p.stok %> unit</div>
+            <div class="stock-bar <%= barClass %>"><i style="width: <%= pct %>%"></i></div>
+          </td>
+          <td><%= p.berat_gram %> g</td>
+          <td><span class="badge <%= stokClass %>"><span class="dot"></span> <%= stokLabel %></span></td>
+          <td class="text-right">
+            <a href="/produk/<%= p.id_produk %>/edit" class="icon-square" title="Edit">✏️</a>
+            <form method="POST" action="/produk/<%= p.id_produk %>/hapus" style="display:inline;" onsubmit="return confirm('Hapus produk ini?')">
+              <button type="submit" class="icon-square" title="Hapus">🗑️</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+  <div class="pagination">
+    <div class="info">Menampilkan <%= products.length %> dari <%= totalProduk %> produk</div>
+    <div class="pages">
+      <button class="page-btn" disabled>‹</button>
+      <button class="page-btn active">1</button>
+      <button class="page-btn" disabled>›</button>
+    </div>
+  </div>
+</div>

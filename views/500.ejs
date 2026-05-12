@@ -1,0 +1,8 @@
+<div class="card card-pad" style="max-width: 720px; margin: 40px auto;">
+  <h2 class="mt-0">⚠️ Terjadi kesalahan</h2>
+  <p class="text-muted">Sistem mengalami kendala saat memproses permintaan Anda.</p>
+  <% if (process.env.NODE_ENV !== 'production' && error) { %>
+    <pre style="background: #f8fafc; padding: 16px; border-radius: 8px; overflow: auto;"><%= error.stack || error.message %></pre>
+  <% } %>
+  <a href="/" class="btn btn-primary mt-4">Kembali ke Dashboard</a>
+</div>

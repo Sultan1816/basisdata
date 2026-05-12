@@ -1,0 +1,22 @@
+<div class="topbar">
+  <div class="topbar-title">
+    <h1><%= pageTitle %></h1>
+    <% if (breadcrumb) { %><div class="breadcrumb"><%= breadcrumb %></div><% } %>
+  </div>
+  <div class="topbar-actions">
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" placeholder="Cari pesanan, produk, pelanggan..." />
+    </div>
+    <button type="button" class="icon-btn" aria-label="Notifikasi">
+      🔔<span class="dot"></span>
+    </button>
+    <div class="profile">
+      <div class="avatar"><%= (currentUser && currentUser.nama || 'A').slice(0,1).toUpperCase() %></div>
+      <div class="prof-txt">
+        <strong><%= currentUser ? currentUser.nama : 'Admin TokoKita' %></strong>
+        <small><%= currentUser ? currentUser.role : 'Super Admin' %></small>
+      </div>
+    </div>
+  </div>
+</div>

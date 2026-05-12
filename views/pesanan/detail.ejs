@@ -1,0 +1,104 @@
+<div class="tracking-grid">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>Pesanan #TK-<%= String(pesanan.id_pesanan).padStart(4,'0') %></h3>
+          <small><%= formatTanggalJam(pesanan.tanggal_pesan) %></small>
+        </div>
+        <% const sp = STATUS_PESANAN[pesanan.status_pesanan] || { label: pesanan.status_pesanan, class: 'badge-muted' }; %>
+        <span class="badge <%= sp.class %>"><span class="dot"></span> <%= sp.label %></span>
+      </div>
+      <div class="card-pad">
+        <h4 class="mt-0">Produk dipesan</h4>
+        <% items.forEach(it => { %>
+          <div class="summary">
+            <div class="prod">
+              <div class="thumb">📦</div>
+              <div style="flex:1">
+                <strong><%= it.nama_produk %></strong>
+                <small><%= it.jumlah %>× &middot; <%= rupiah(it.harga_satuan) %></small>
+              </div>
+              <div class="text-right"><strong><%= rupiah(it.subtotal) %></strong></div>
+            </div>
+          </div>
+        <% }) %>
+        <hr class="soft">
+        <div class="summary">
+          <div class="totline"><span class="label">Subtotal Produk</span><span><%= rupiah(pesanan.total_harga) %></span></div>
+          <div class="totline"><span class="label">Ongkos Kirim</span><span><%= rupiah(pesanan.ongkos_kirim) %></span></div>
+          <div class="totline"><span class="label">Diskon</span><span>- <%= rupiah(pesanan.diskon) %></span></div>
+          <div class="totline total"><span class="label">Total Tagihan</span><strong><%= rupiah(pesanan.total_tagihan) %></strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-6 card-pad">
+      <h3 class="mt-0">Ubah Status Pesanan</h3>
+      <form method="POST" action="/pesanan/<%= pesanan.id_pesanan %>/status" class="flex gap-2 items-center">
+        <select name="status" class="form-control" style="max-width: 240px;">
+          <% Object.entries(STATUS_PESANAN).forEach(([key, v]) => { %>
+            <option value="<%= key %>" <%= pesanan.status_pesanan === key ? 'selected' : '' %>><%= v.label %></option>
+          <% }) %>
+        </select>
+        <button type="submit" class="btn btn-primary">Update Status</button>
+        <a href="/pesanan" class="btn btn-outline">Kembali</a>
+      </form>
+    </div>
+  </div>
+
+  <div class="tracking-right">
+    <div class="card card-pad recipient">
+      <h4 class="mt-0">📍 Alamat Penerima</h4>
+      <hr class="soft">
+      <div class="name"><%= pesanan.penerima %></div>
+      <div class="ph">📱 <%= pesanan.no_hp_penerima %></div>
+      <div class="addr">
+        <%= pesanan.alamat_lengkap %>, <%= pesanan.kota %>, <%= pesanan.provinsi %> <%= pesanan.kode_pos %>
+      </div>
+      <div class="mt-2"><span class="badge badge-primary"><%= pesanan.label %></span></div>
+    </div>
+
+    <% if (bayar) {
+      const sb = STATUS_BAYAR[bayar.status_bayar] || { label: bayar.status_bayar, class: 'badge-muted' };
+    %>
+      <div class="card card-pad">
+        <h4 class="mt-0">💳 Pembayaran</h4>
+        <hr class="soft">
+        <div class="totline flex justify-between" style="display:flex; justify-content: space-between;">
+          <span class="text-muted">Metode</span>
+          <strong><%= metodeLabel(bayar.metode, bayar.nama_penyedia) %></strong>
+        </div>
+        <div class="totline flex justify-between" style="display:flex; justify-content: space-between;">
+          <span class="text-muted">Jumlah Bayar</span>
+          <strong><%= rupiah(bayar.jumlah_bayar) %></strong>
+        </div>
+        <div class="totline flex justify-between" style="display:flex; justify-content: space-between;">
+          <span class="text-muted">Tanggal</span>
+          <span><%= bayar.tanggal_bayar ? formatTanggalJam(bayar.tanggal_bayar) : '-' %></span>
+        </div>
+        <div class="mt-2"><span class="badge <%= sb.class %>"><%= sb.label %></span></div>
+      </div>
+    <% } %>
+
+    <% if (kirim) {
+      const sk = STATUS_KIRIM[kirim.status_kirim] || { label: kirim.status_kirim, class: 'badge-muted' };
+    %>
+      <div class="card card-pad">
+        <h4 class="mt-0">🚚 Pengiriman</h4>
+        <hr class="soft">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="kurir-badge <%= kurirClass(kirim.kode_kurir) %>"><%= kirim.kode_kurir %></span>
+          <span class="text-muted">·</span>
+          <span><%= kirim.layanan || '-' %></span>
+        </div>
+        <div class="totline flex justify-between" style="display:flex; justify-content: space-between;">
+          <span class="text-muted">No. Resi</span>
+          <strong><%= kirim.no_resi %></strong>
+        </div>
+        <div class="mt-2"><span class="badge <%= sk.class %>"><%= sk.label %></span></div>
+        <a href="/pengiriman?q=<%= kirim.no_resi %>" class="btn btn-outline btn-block mt-4">Lacak Paket →</a>
+      </div>
+    <% } %>
+  </div>
+</div>
