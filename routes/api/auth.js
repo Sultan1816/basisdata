@@ -24,10 +24,6 @@ router.post('/login', async (req, res) => {
       ok = await bcrypt.compare(password, admin.password);
     } else {
       ok = password === admin.password;
-      if (ok) {
-        const hashed = await bcrypt.hash(password, 10);
-        await db.query('UPDATE admin SET password = ? WHERE id_admin = ?', [hashed, admin.id_admin]);
-      }
     }
 
     if (!ok) return res.status(401).json({ error: 'Email atau password salah.' });
