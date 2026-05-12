@@ -1,122 +1,94 @@
-<div class="grid-4 mb-4">
-  <div class="stat-card">
-    <div class="stat-label">Total Produk</div>
-    <div class="stat-value"><%= counts.total_produk %></div>
-    <div class="stat-sub">+12 bulan ini</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Kategori Aktif</div>
-    <div class="stat-value"><%= counts.kategori_aktif %></div>
-    <div class="stat-sub">3 kategori utama</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Stok Rendah</div>
-    <div class="stat-value"><%= counts.stok_rendah %></div>
-    <div class="stat-sub">Perlu restock</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-label">Stok Habis</div>
-    <div class="stat-value"><%= counts.stok_habis %></div>
-    <div class="stat-sub">Segera direstock</div>
-  </div>
-</div>
+<h3>Ringkasan Produk</h3>
+<ul class="kv-list">
+  <li>Total Produk: <strong><%= counts.total_produk %></strong></li>
+  <li>Kategori Aktif: <strong><%= counts.kategori_aktif %></strong></li>
+  <li>Stok Rendah: <strong><%= counts.stok_rendah %></strong></li>
+  <li>Stok Habis: <strong><%= counts.stok_habis %></strong></li>
+</ul>
 
 <form method="GET" action="/produk">
-  <div class="chips">
-    <a href="/produk" class="chip <%= !filters.kategori ? 'active' : '' %>">
-      Semua Kategori <span class="count"><%= totalProduk %></span>
-    </a>
-    <% kategoriList.forEach(k => { %>
-      <a
-        href="/produk?kategori=<%= k.id_kategori %>"
-        class="chip <%= String(filters.kategori) === String(k.id_kategori) ? 'active' : '' %>">
-        <%= k.nama_kategori %> <span class="count"><%= k.total %></span>
-      </a>
-    <% }) %>
-  </div>
+  <div class="filter-bar">
+    <label>
+      Kategori:
+      <select name="kategori" onchange="this.form.submit()">
+        <option value="">Semua (<%= totalProduk %>)</option>
+        <% kategoriList.forEach(k => { %>
+          <option value="<%= k.id_kategori %>" <%= String(filters.kategori) === String(k.id_kategori) ? 'selected' : '' %>>
+            <%= k.nama_kategori %> (<%= k.total %>)
+          </option>
+        <% }) %>
+      </select>
+    </label>
 
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <div class="search-input">
-        <input type="text" name="q" placeholder="Cari nama produk, SKU, kategori..." value="<%= filters.q %>">
-      </div>
-      <select class="filter-select" name="stok" onchange="this.form.submit()">
-        <option value="">Stok: Semua</option>
+    <label>
+      Stok:
+      <select name="stok" onchange="this.form.submit()">
+        <option value="">Semua</option>
         <option value="tersedia" <%= filters.stok === 'tersedia' ? 'selected' : '' %>>Tersedia</option>
         <option value="rendah"   <%= filters.stok === 'rendah'   ? 'selected' : '' %>>Stok Rendah</option>
         <option value="habis"    <%= filters.stok === 'habis'    ? 'selected' : '' %>>Habis</option>
       </select>
-      <select class="filter-select" name="sort" onchange="this.form.submit()">
-        <option value="">Urutkan</option>
+    </label>
+
+    <label>
+      Urutkan:
+      <select name="sort" onchange="this.form.submit()">
+        <option value="">Default</option>
         <option value="nama_asc"    <%= filters.sort === 'nama_asc'    ? 'selected' : '' %>>Nama A-Z</option>
         <option value="termurah"    <%= filters.sort === 'termurah'    ? 'selected' : '' %>>Harga Termurah</option>
         <option value="termahal"    <%= filters.sort === 'termahal'    ? 'selected' : '' %>>Harga Termahal</option>
         <option value="stok_rendah" <%= filters.sort === 'stok_rendah' ? 'selected' : '' %>>Stok Rendah</option>
       </select>
-      <button type="submit" class="btn">Terapkan</button>
-    </div>
-    <div>
-      <a href="/produk/baru" class="btn btn-primary">Tambah Produk</a>
-    </div>
+    </label>
+
+    <label>
+      Cari:
+      <input type="text" name="q" value="<%= filters.q %>" placeholder="Nama produk...">
+    </label>
+
+    <button type="submit" class="btn">Terapkan</button>
+    <a href="/produk/baru" class="btn btn-primary">Tambah Produk</a>
   </div>
 </form>
 
-<div class="card table-card">
-  <table class="table">
-    <thead>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Nama Produk</th>
+      <th>Kategori</th>
+      <th>Harga</th>
+      <th>Stok</th>
+      <th>Berat</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!products.length) { %>
+      <tr><td colspan="7">Tidak ada produk.</td></tr>
+    <% } %>
+    <% products.forEach(p => {
+      let stokLabel = 'Tersedia';
+      if (p.stok === 0)        stokLabel = 'Habis';
+      else if (p.stok <= 10)   stokLabel = 'Stok Rendah';
+    %>
       <tr>
-        <th>Produk</th>
-        <th>Kategori</th>
-        <th>Harga</th>
-        <th>Stok</th>
-        <th>Berat</th>
-        <th>Status</th>
-        <th class="text-right">Aksi</th>
+        <td><%= p.nama_produk %></td>
+        <td><%= p.nama_kategori %></td>
+        <td><%= rupiah(p.harga) %></td>
+        <td><%= p.stok %> unit</td>
+        <td><%= p.berat_gram %> g</td>
+        <td><%= stokLabel %></td>
+        <td>
+          <a href="/produk/<%= p.id_produk %>/edit">Edit</a>
+          |
+          <form method="POST" action="/produk/<%= p.id_produk %>/hapus" class="inline-form" onsubmit="return confirm('Hapus produk ini?')">
+            <button type="submit" class="link-btn">Hapus</button>
+          </form>
+        </td>
       </tr>
-    </thead>
-    <tbody>
-      <% if (!products.length) { %>
-        <tr><td colspan="7"><div class="empty-state">Tidak ada produk.</div></td></tr>
-      <% } %>
-      <% products.forEach(p => {
-        let stokLabel = 'Tersedia';
-        if (p.stok === 0)        stokLabel = 'Habis';
-        else if (p.stok <= 10)   stokLabel = 'Stok Rendah';
-        const pct = Math.max(2, Math.min(100, p.stok));
-        const sku = `SKU-${String(p.nama_kategori || 'X').charAt(0).toUpperCase()}${String(p.id_produk).padStart(3, '0')}`;
-      %>
-        <tr>
-          <td>
-            <div class="cell-product">
-              <strong><%= p.nama_produk %></strong>
-              <small><%= sku %> &middot; <%= p.is_active ? 'Aktif' : 'Nonaktif' %></small>
-            </div>
-          </td>
-          <td><span class="badge"><%= p.nama_kategori %></span></td>
-          <td><strong><%= rupiah(p.harga) %></strong></td>
-          <td>
-            <div><%= p.stok %> unit</div>
-            <div class="stock-bar"><i style="width: <%= pct %>%"></i></div>
-          </td>
-          <td><%= p.berat_gram %> g</td>
-          <td><span class="badge"><%= stokLabel %></span></td>
-          <td class="text-right">
-            <a href="/produk/<%= p.id_produk %>/edit" class="btn">Edit</a>
-            <form method="POST" action="/produk/<%= p.id_produk %>/hapus" class="inline-form" onsubmit="return confirm('Hapus produk ini?')">
-              <button type="submit" class="btn">Hapus</button>
-            </form>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+    <% }) %>
+  </tbody>
+</table>
 
-  <div class="pagination">
-    <div class="info">Menampilkan <%= products.length %> dari <%= totalProduk %> produk</div>
-    <div class="pages">
-      <button class="page-btn" disabled>Sebelumnya</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn" disabled>Selanjutnya</button>
-    </div>
-  </div>
-</div>
+<p class="text-muted">Menampilkan <%= products.length %> dari <%= totalProduk %> produk.</p>

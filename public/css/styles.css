@@ -1,12 +1,24 @@
-/* TokoKita Admin - bare bones */
+/* TokoKita Admin - minimal HTML skeleton */
 
 body {
   margin: 0;
+  padding: 0;
   font-family: Arial, sans-serif;
   font-size: 14px;
+  line-height: 1.4;
   color: #000;
   background: #fff;
 }
+
+a       { color: #00f; }
+a:hover { text-decoration: none; }
+
+h1 { font-size: 18px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 12px 0 6px; }
+h3 { font-size: 14px; margin: 12px 0 4px; }
+h4 { font-size: 13px; margin: 8px 0 4px; }
+
+hr { border: 0; border-top: 1px solid #000; margin: 8px 0; }
 
 /* ===== Layout ===== */
 .app-shell { display: flex; }
@@ -18,30 +30,47 @@ body {
 }
 .sidebar-logo  { margin-bottom: 8px; }
 .sidebar-logo small { font-size: 11px; }
-.nav-label { font-size: 11px; margin-top: 8px; }
+.sidebar-user {
+  padding: 6px 0;
+  border-top: 1px dotted #999;
+  border-bottom: 1px dotted #999;
+  font-size: 12px;
+}
+.sidebar-user small { color: #555; }
+
+.nav-label {
+  font-size: 11px;
+  color: #555;
+  margin: 8px 0 4px;
+}
 .nav-item {
   display: block;
   padding: 2px 0;
-  color: #000;
 }
 .nav-item.active { font-weight: bold; }
-.nav-item-button {
+
+.sidebar-footer { margin-top: 12px; }
+.logout-form    { margin: 0; }
+
+.link-btn {
   background: none;
   border: 0;
-  padding: 2px 0;
+  padding: 0;
   font: inherit;
   cursor: pointer;
   color: #00f;
   text-decoration: underline;
 }
-.sidebar-footer { margin-top: 12px; }
-.logout-form    { margin: 0; }
 
-.main    { flex: 1; padding: 0; }
-.topbar  { padding: 8px 12px; border-bottom: 1px solid #000; }
-.topbar-title h1 { margin: 0; font-size: 16px; }
-.topbar-title .breadcrumb { font-size: 11px; }
-.topbar-actions { display: none; }
+.main { flex: 1; min-width: 0; }
+
+.topbar {
+  padding: 8px 12px;
+  border-bottom: 1px solid #000;
+}
+.topbar h1         { margin: 0; font-size: 16px; }
+.topbar .breadcrumb { font-size: 11px; color: #555; }
+
 .content { padding: 12px; }
 
 /* ===== Alerts ===== */
@@ -49,85 +78,59 @@ body {
 .alert-success { background: #cfc; }
 .alert-error   { background: #fcc; }
 
-/* ===== Headings & text ===== */
-h1 { font-size: 16px; margin: 8px 0; }
-h2 { font-size: 14px; margin: 8px 0; }
-h3 { font-size: 13px; margin: 8px 0; }
-h4 { font-size: 12px; margin: 6px 0; }
+/* ===== Key-value list ===== */
+.kv-list {
+  margin: 4px 0 12px;
+  padding-left: 20px;
+}
+.kv-list li { padding: 1px 0; }
 
-hr { border: 0; border-top: 1px solid #000; margin: 8px 0; }
+/* ===== Welcome banner ===== */
+.welcome-banner { margin-bottom: 12px; }
+.welcome-banner h2 { margin: 0 0 4px; }
+.welcome-banner p  { margin: 0; color: #555; }
 
-/* ===== Cards (just spacing, no boxes) ===== */
-.card,
-.card-pad,
-.card-header,
-.welcome-banner,
-.hero-search,
-.stat-card,
-.empty-state,
-.pay-success,
-.error-trace,
-.table-card {
-  border: 0;
-  padding: 0;
+/* ===== Filter bar ===== */
+.filter-bar {
   margin: 8px 0;
-  background: transparent;
+  padding: 4px 0;
+}
+.filter-bar label { margin-right: 12px; }
+.filter-bar select,
+.filter-bar input {
+  padding: 1px 4px;
+  font-size: 13px;
+  border: 1px solid #000;
 }
 
-.center-card  { max-width: 480px; }
+/* ===== Tabs (text links) ===== */
+.tabs { margin: 8px 0; }
+.tab          { text-decoration: underline; }
+.tab.active   { color: #000; text-decoration: none; font-weight: bold; }
 
-/* ===== Stats: turn into plain dl-style ===== */
-.stat-grid,
-.grid-4, .grid-3, .grid-2 {
-  display: block;
-}
-.stat-card {
-  display: inline-block;
-  margin-right: 16px;
-  margin-bottom: 4px;
-}
-.stat-card .stat-top   { display: inline; }
-.stat-card .stat-label { display: inline; }
-.stat-card .stat-label::after { content: ': '; }
-.stat-card .stat-value { display: inline; font-weight: bold; }
-.stat-card .stat-sub   { display: block; font-size: 11px; color: #555; }
-.stat-card .badge-trend { display: none; }
-
-/* ===== Badges become plain text in brackets ===== */
-.badge        { font-size: inherit; }
-.badge::before { content: '['; }
-.badge::after  { content: ']'; }
-
-/* ===== Tables: default look ===== */
-table.table {
+/* ===== Table ===== */
+.table {
+  width: 100%;
   border-collapse: collapse;
   border: 1px solid #000;
-  width: 100%;
+  margin: 4px 0 8px;
 }
-.table th, .table td {
-  border: 1px solid #000;
+.table th,
+.table td {
   padding: 2px 6px;
   text-align: left;
   vertical-align: top;
   font-weight: normal;
+  border: 1px solid #000;
 }
 .table th { background: #eee; }
+.table td small { color: #555; font-size: 11px; }
 
-.cell-id              { font-weight: bold; }
-.cell-product strong  { font-weight: bold; }
-.cell-product small   { color: #555; }
-
-.avatar-circle { display: none; }
-.customer-cell strong { display: block; }
-.customer-cell small  { font-size: 11px; color: #555; }
-
-.stock-bar { display: none; }
-
-/* ===== Buttons: default HTML buttons ===== */
+/* ===== Buttons ===== */
 .btn,
 .btn-primary {
   display: inline-block;
-  padding: 1px 6px;
+  padding: 1px 8px;
   font-size: 13px;
   color: #000;
   background: #ddd;
@@ -136,152 +139,48 @@ table.table {
   cursor: pointer;
 }
 .btn-primary { font-weight: bold; }
-.btn:active, .btn:focus { border-style: inset; }
-.btn-block   { display: block; width: auto; text-align: left; }
+.btn:active  { border-style: inset; }
 
 .inline-form { display: inline; }
 
-/* ===== Tabs as plain list ===== */
-.tabs { margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #000; }
-.tab {
-  margin-right: 8px;
-  color: #00f;
-  text-decoration: underline;
-}
-.tab.active { color: #000; text-decoration: none; font-weight: bold; }
-.tab .count::before { content: '('; }
-.tab .count::after  { content: ')'; }
-
-/* ===== Toolbar (just inline) ===== */
-.toolbar,
-.toolbar-left,
-.toolbar-right {
-  display: block;
-  margin: 4px 0;
-}
-.toolbar > div,
-.toolbar-left > *,
-.toolbar-right > * { margin-right: 4px; }
-
-.search-box,
-.search-input { display: inline; border: 0; padding: 0; }
-.search-box input,
-.search-input input {
-  border: 1px solid #000;
-  padding: 1px 4px;
-  font-size: 13px;
-}
-
-.filter-select,
-.form-control {
+/* ===== Forms ===== */
+.form-group       { margin-bottom: 8px; }
+.form-group label { display: block; font-weight: bold; }
+.form-control     {
   padding: 1px 4px;
   font-size: 13px;
   border: 1px solid #000;
+  width: 280px;
 }
-
-.form-group       { margin-bottom: 6px; }
-.form-group label { display: block; }
-.form-control     { width: 300px; }
 textarea.form-control { width: 400px; }
 
-.form-row { display: block; }
-.form-card { max-width: none; }
-.form-actions-row { margin-top: 8px; }
-.form-inline { display: block; }
-.form-inline > * { margin-right: 4px; }
-.select-sm { max-width: none; }
-
-/* ===== Pagination ===== */
-.pagination { margin-top: 8px; }
-.pagination .info { font-size: 11px; display: block; margin-bottom: 2px; }
-.pagination .pages { display: inline; }
-.page-btn  { padding: 0 4px; background: #ddd; border: 1px solid #000; }
-.page-btn.active { background: #000; color: #fff; }
-
-/* ===== Chips ===== */
-.chips { margin: 4px 0; }
-.chip {
-  margin-right: 4px;
-  color: #00f;
-  text-decoration: underline;
-}
-.chip.active { color: #000; text-decoration: none; font-weight: bold; }
-.chip .count::before { content: '('; }
-.chip .count::after  { content: ')'; }
-
-/* ===== Order list & chart (dashboard) ===== */
-.order-list { margin: 4px 0; }
-.order-list .order-row {
-  padding: 2px 0;
-  border-bottom: 1px dotted #999;
-}
-.order-list .left { display: inline; }
-.order-list .left strong { font-weight: bold; }
-.order-list .left small  { color: #555; }
-.order-list .right { display: inline; margin-left: 8px; }
-.order-list .price { font-weight: bold; }
-
-.chart-area    { display: none; }
-.chart-legend  { display: none; }
-
-/* ===== Pengiriman ===== */
-.kurir-stat .progress { display: none; }
-.kurir-stat .splits   { font-size: 12px; }
-.kurir-stat .splits strong { font-weight: bold; }
-
-.tracking-grid { display: block; }
-.tracking-right { display: block; }
-
-.tl-header { margin: 4px 0; }
-.resi-pill .pill { font-family: monospace; }
-.status-pill::before { content: '['; }
-.status-pill::after  { content: ']'; }
-
-.info-grid       { display: block; }
-.info-grid .item { display: inline-block; margin-right: 12px; }
-.info-grid .item small  { font-size: 11px; color: #555; }
-.info-grid .item small::after { content: ': '; }
-.info-grid .item strong { font-weight: bold; }
-
-.timeline-list { list-style: disc; padding-left: 20px; }
-.timeline-step { padding: 2px 0; }
-.timeline-step .body small { font-size: 11px; color: #555; }
-.timeline-step.active .body strong::before { content: '> ';  }
-.timeline-step.done   .body strong::before { content: '* ';  }
-
-.posisi-tag { font-size: 11px; }
-.posisi-tag::before { content: '['; }
-.posisi-tag::after  { content: ']'; }
-
-.recipient .name { font-weight: bold; }
-
-/* Product / order summary lines */
-.prod-line,
-.summary .prod {
-  display: block;
-  padding: 2px 0;
-}
-.prod-info small  { color: #555; }
-
-.totline       { font-size: 13px; }
-.totline.total { margin-top: 4px; padding-top: 4px; border-top: 1px solid #000; font-weight: bold; }
-
 /* ===== Login ===== */
-.login-shell { display: block; padding: 20px; }
-.login-left  { padding: 0; border: 0; margin-bottom: 16px; }
-.login-right { padding: 0; display: block; }
-.login-form-wrap { max-width: 360px; }
-.login-form-wrap .form-actions { margin: 8px 0; }
-.feature-row { padding-left: 20px; }
-.login-footer { font-size: 11px; color: #555; margin-top: 8px; }
-.divider { margin: 8px 0; }
-.checkbox { display: inline; }
-.link { color: #00f; text-decoration: underline; }
+.login-shell {
+  display: block;
+  padding: 20px;
+  max-width: 720px;
+}
+.login-left  { margin-bottom: 16px; }
+.login-hero p  { color: #555; }
+.feature-row {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+.login-footer { font-size: 11px; color: #555; margin-top: 12px; }
+.login-form-wrap h1 { margin: 0 0 4px; }
+
+/* ===== Error trace ===== */
+.error-trace {
+  padding: 8px;
+  margin: 8px 0;
+  font-family: monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  border: 1px solid #000;
+  background: #f5f5f5;
+}
 
 /* ===== Utilities ===== */
-.text-muted, .text-soft { color: #555; }
+.text-muted  { color: #555; }
 .text-right  { text-align: right; }
-.text-center { text-align: center; }
 .font-bold   { font-weight: bold; }
-.mt-0 { margin-top: 0; } .mt-2 { margin-top: 4px; } .mt-4 { margin-top: 8px; } .mt-6 { margin-top: 12px; }
-.mb-0 { margin-bottom: 0; } .mb-4 { margin-bottom: 8px; } .mb-6 { margin-bottom: 12px; }

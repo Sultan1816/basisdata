@@ -7,98 +7,68 @@
   { key: 'dibatalkan',     label: 'Dibatalkan' }
 ]; %>
 
-<div class="tabs mb-4">
-  <% tabs.forEach(t => { %>
+<p class="tabs">
+  <% tabs.forEach((t, i) => { %>
+    <% if (i > 0) { %> | <% } %>
     <a
       href="/pesanan<%= t.key === 'semua' ? '' : `?status=${t.key}` %>"
       class="tab <%= filters.status === t.key ? 'active' : '' %>">
-      <%= t.label %>
-      <span class="count"><%= Number(counts[t.key] || 0).toLocaleString('id-ID') %></span>
+      <%= t.label %> (<%= Number(counts[t.key] || 0).toLocaleString('id-ID') %>)
     </a>
   <% }) %>
-</div>
+</p>
 
 <form method="GET" action="/pesanan">
   <input type="hidden" name="status" value="<%= filters.status %>">
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <div class="search-input">
-        <input type="text" name="q" placeholder="Cari ID pesanan, nama pelanggan..." value="<%= filters.q %>">
-      </div>
-      <button type="submit" class="btn">Filter</button>
-    </div>
-    <div class="toolbar-right">
-      <button type="button" class="btn">Ekspor</button>
-      <a href="#" class="btn btn-primary">Pesanan Baru</a>
-    </div>
+  <div class="filter-bar">
+    <label>
+      Cari:
+      <input type="text" name="q" value="<%= filters.q %>" placeholder="ID atau nama pelanggan...">
+    </label>
+    <button type="submit" class="btn">Filter</button>
   </div>
 </form>
 
-<div class="card table-card">
-  <table class="table">
-    <thead>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID Pesanan</th>
+      <th>Pelanggan</th>
+      <th>Tanggal</th>
+      <th>Total</th>
+      <th>Pembayaran</th>
+      <th>Kurir</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!pesanan.length) { %>
+      <tr><td colspan="8">Tidak ada pesanan untuk filter ini.</td></tr>
+    <% } %>
+    <% pesanan.forEach(o => { %>
       <tr>
-        <th>ID Pesanan</th>
-        <th>Pelanggan</th>
-        <th>Tanggal</th>
-        <th>Total</th>
-        <th>Pembayaran</th>
-        <th>Kurir</th>
-        <th>Status</th>
-        <th class="text-right">Aksi</th>
+        <td>#TK-<%= String(o.id_pesanan).padStart(4, '0') %></td>
+        <td>
+          <%= o.pelanggan_nama %><br>
+          <small><%= o.pelanggan_email %></small>
+        </td>
+        <td><%= formatTanggal(o.tanggal_pesan) %></td>
+        <td><%= rupiah(o.total_tagihan) %></td>
+        <td>
+          <% if (o.bayar_metode) { %>
+            <%= metodeLabel(o.bayar_metode, o.bayar_penyedia) %><br>
+            <small><%= statusLabel(STATUS_BAYAR, o.status_bayar) %></small>
+          <% } else { %>
+            -
+          <% } %>
+        </td>
+        <td><%= o.kode_kurir || '-' %></td>
+        <td><%= statusLabel(STATUS_PESANAN, o.status_pesanan) %></td>
+        <td><a href="/pesanan/<%= o.id_pesanan %>">Lihat</a></td>
       </tr>
-    </thead>
-    <tbody>
-      <% if (!pesanan.length) { %>
-        <tr><td colspan="8"><div class="empty-state">Tidak ada pesanan untuk filter ini.</div></td></tr>
-      <% } %>
-      <% pesanan.forEach(o => {
-        const sp = STATUS_PESANAN[o.status_pesanan] || { label: o.status_pesanan, class: '' };
-        const sb = STATUS_BAYAR[o.status_bayar] || { label: o.status_bayar || '-', class: '' };
-      %>
-        <tr>
-          <td><span class="cell-id">#TK-<%= String(o.id_pesanan).padStart(4, '0') %></span></td>
-          <td>
-            <div class="customer-cell">
-              <div class="avatar-circle"><%= initials(o.pelanggan_nama) %></div>
-              <div>
-                <strong><%= o.pelanggan_nama %></strong>
-                <small><%= o.pelanggan_email %></small>
-              </div>
-            </div>
-          </td>
-          <td><%= formatTanggal(o.tanggal_pesan) %></td>
-          <td><strong><%= rupiah(o.total_tagihan) %></strong></td>
-          <td>
-            <% if (o.bayar_metode) { %>
-              <div><%= metodeLabel(o.bayar_metode, o.bayar_penyedia) %></div>
-              <span class="badge"><%= sb.label %></span>
-            <% } else { %>
-              <span class="text-muted">-</span>
-            <% } %>
-          </td>
-          <td>
-            <% if (o.kode_kurir) { %>
-              <span class="badge"><%= o.kode_kurir %></span>
-            <% } else { %>
-              <span class="text-muted">-</span>
-            <% } %>
-          </td>
-          <td><span class="badge"><%= sp.label %></span></td>
-          <td class="text-right">
-            <a href="/pesanan/<%= o.id_pesanan %>" class="btn">Lihat</a>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
+    <% }) %>
+  </tbody>
+</table>
 
-  <div class="pagination">
-    <div class="info">Menampilkan <%= pesanan.length %> dari <%= counts.semua %> pesanan</div>
-    <div class="pages">
-      <button class="page-btn" disabled>Sebelumnya</button>
-      <button class="page-btn active">1</button>
-      <button class="page-btn" disabled>Selanjutnya</button>
-    </div>
-  </div>
-</div>
+<p class="text-muted">Menampilkan <%= pesanan.length %> dari <%= counts.semua %> pesanan.</p>

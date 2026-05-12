@@ -1,59 +1,51 @@
-<form method="GET" action="/pelanggan">
-  <div class="toolbar">
-    <div class="toolbar-left">
-      <div class="search-input">
-        <input type="text" name="q" placeholder="Cari nama, email, no. HP..." value="<%= filters.q %>">
-      </div>
-      <select class="filter-select" name="status" onchange="this.form.submit()">
-        <option value="">Semua Status</option>
-        <option value="aktif"    <%= filters.status === 'aktif'    ? 'selected' : '' %>>Aktif</option>
-        <option value="nonaktif" <%= filters.status === 'nonaktif' ? 'selected' : '' %>>Nonaktif</option>
-        <option value="diblokir" <%= filters.status === 'diblokir' ? 'selected' : '' %>>Diblokir</option>
-      </select>
-      <button type="submit" class="btn">Filter</button>
-    </div>
-  </div>
+<form method="GET" action="/pelanggan" class="filter-bar">
+  <label>
+    Cari:
+    <input type="text" name="q" value="<%= filters.q %>" placeholder="Nama, email, no. HP...">
+  </label>
+  <label>
+    Status:
+    <select name="status" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      <option value="aktif"    <%= filters.status === 'aktif'    ? 'selected' : '' %>>Aktif</option>
+      <option value="nonaktif" <%= filters.status === 'nonaktif' ? 'selected' : '' %>>Nonaktif</option>
+      <option value="diblokir" <%= filters.status === 'diblokir' ? 'selected' : '' %>>Diblokir</option>
+    </select>
+  </label>
+  <button type="submit" class="btn">Filter</button>
 </form>
 
-<div class="card table-card">
-  <table class="table">
-    <thead>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Nama</th>
+      <th>Email</th>
+      <th>No. HP</th>
+      <th>Tanggal Daftar</th>
+      <th>Total Pesanan</th>
+      <th>Total Belanja</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (!pelanggan.length) { %>
+      <tr><td colspan="7">Tidak ada pelanggan.</td></tr>
+    <% } %>
+    <% const statusMap = {
+         aktif:    'Aktif',
+         nonaktif: 'Nonaktif',
+         diblokir: 'Diblokir'
+       }; %>
+    <% pelanggan.forEach(p => { %>
       <tr>
-        <th>Pelanggan</th>
-        <th>No. HP</th>
-        <th>Tanggal Daftar</th>
-        <th>Total Pesanan</th>
-        <th>Total Belanja</th>
-        <th>Status</th>
+        <td><%= p.nama %></td>
+        <td><%= p.email %></td>
+        <td><%= p.no_hp %></td>
+        <td><%= formatTanggal(p.tanggal_daftar) %></td>
+        <td><%= p.total_pesanan %></td>
+        <td><%= rupiah(p.total_belanja) %></td>
+        <td><%= statusMap[p.status_akun] || p.status_akun %></td>
       </tr>
-    </thead>
-    <tbody>
-      <% if (!pelanggan.length) { %>
-        <tr><td colspan="6"><div class="empty-state">Tidak ada pelanggan.</div></td></tr>
-      <% } %>
-      <% const statusMap = {
-           aktif:    'Aktif',
-           nonaktif: 'Nonaktif',
-           diblokir: 'Diblokir'
-         }; %>
-      <% pelanggan.forEach(p => { %>
-        <tr>
-          <td>
-            <div class="customer-cell">
-              <div class="avatar-circle"><%= initials(p.nama) %></div>
-              <div>
-                <strong><%= p.nama %></strong>
-                <small><%= p.email %></small>
-              </div>
-            </div>
-          </td>
-          <td><%= p.no_hp %></td>
-          <td><%= formatTanggal(p.tanggal_daftar) %></td>
-          <td><strong><%= p.total_pesanan %></strong></td>
-          <td><strong><%= rupiah(p.total_belanja) %></strong></td>
-          <td><span class="badge"><%= statusMap[p.status_akun] || p.status_akun %></span></td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-</div>
+    <% }) %>
+  </tbody>
+</table>

@@ -10,33 +10,29 @@
 
 <div class="login-shell">
   <div class="login-left">
-    <div class="login-brand">
-      <div class="lt">
-        <strong>TokoKita</strong>
-        <small>E-Commerce Admin Panel</small>
-      </div>
-    </div>
+    <strong>TokoKita</strong>
+    <div><small>E-Commerce Admin Panel</small></div>
 
     <div class="login-hero">
-      <h2>Kelola Toko Online Anda dengan Mudah dan Cepat</h2>
+      <h2>Kelola Toko Online Anda</h2>
       <p>
         Platform admin terintegrasi dengan fitur multi-kurir tracking real-time.
         Pantau pesanan, pengiriman, dan pembayaran dalam satu dashboard.
       </p>
       <ul class="feature-row">
         <li>Real-time tracking</li>
-        <li>Multi-kurir support (JNE, J&amp;T, SiCepat)</li>
+        <li>Multi-kurir support (JNE, J&T, SiCepat)</li>
         <li>Laporan lengkap</li>
       </ul>
     </div>
 
-    <div class="login-footer">&copy; 2026 TokoKita. All rights reserved.</div>
+    <div class="login-footer">(c) 2026 TokoKita</div>
   </div>
 
   <div class="login-right">
     <div class="login-form-wrap">
-      <h1>Selamat Datang Kembali</h1>
-      <p>Masuk ke akun admin Anda untuk mengelola TokoKita.</p>
+      <h1>Masuk</h1>
+      <p>Silakan masuk ke akun admin Anda.</p>
 
       <% if (flash.success && flash.success.length) { %>
         <div class="alert alert-success"><%= flash.success[0] %></div>
@@ -53,7 +49,6 @@
             class="form-control"
             type="email"
             name="email"
-            placeholder="admin@tokokita.com"
             value="admin@tokokita.com"
             required
             autofocus>
@@ -66,26 +61,11 @@
             class="form-control"
             type="password"
             name="password"
-            placeholder="Masukkan password"
             required>
         </div>
 
-        <div class="form-actions">
-          <label class="checkbox">
-            <input type="checkbox" name="remember">
-            <span>Ingat saya</span>
-          </label>
-          <a href="#" class="link">Lupa password?</a>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-block">Masuk ke Dashboard</button>
+        <button type="submit" class="btn btn-primary">Masuk</button>
       </form>
-
-      <div class="divider">atau</div>
-
-      <div class="text-center">
-        Belum punya akun? <a href="#" class="link">Daftar Sekarang</a>
-      </div>
     </div>
   </div>
 </div>

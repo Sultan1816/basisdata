@@ -1,24 +1,29 @@
 <aside class="sidebar">
   <div class="sidebar-logo">
     <strong>TokoKita</strong>
-    <small>Admin Panel</small>
+    <div><small>Admin Panel</small></div>
   </div>
+
+  <% if (currentUser) { %>
+    <div class="sidebar-user">
+      <%= currentUser.nama %><br>
+      <small><%= currentUser.role %></small>
+    </div>
+  <% } %>
 
   <nav class="sidebar-nav">
     <div class="nav-label">Menu Utama</div>
-    <a href="/" class="nav-item <%= currentPath === '/' ? 'active' : '' %>">Dashboard</a>
-    <a href="/produk" class="nav-item <%= currentPath.startsWith('/produk') ? 'active' : '' %>">Produk</a>
-    <a href="/pesanan" class="nav-item <%= currentPath.startsWith('/pesanan') ? 'active' : '' %>">Pesanan</a>
-    <a href="/pengiriman" class="nav-item <%= currentPath.startsWith('/pengiriman') ? 'active' : '' %>">Pengiriman</a>
-    <a href="/pembayaran" class="nav-item <%= currentPath.startsWith('/pembayaran') ? 'active' : '' %>">Pembayaran</a>
-    <a href="/pelanggan" class="nav-item <%= currentPath.startsWith('/pelanggan') ? 'active' : '' %>">Pelanggan</a>
+    <a href="/"            class="nav-item <%= currentPath === '/' ? 'active' : '' %>">Dashboard</a>
+    <a href="/produk"      class="nav-item <%= currentPath.startsWith('/produk')      ? 'active' : '' %>">Produk</a>
+    <a href="/pesanan"     class="nav-item <%= currentPath.startsWith('/pesanan')     ? 'active' : '' %>">Pesanan</a>
+    <a href="/pengiriman"  class="nav-item <%= currentPath.startsWith('/pengiriman')  ? 'active' : '' %>">Pengiriman</a>
+    <a href="/pembayaran"  class="nav-item <%= currentPath.startsWith('/pembayaran')  ? 'active' : '' %>">Pembayaran</a>
+    <a href="/pelanggan"   class="nav-item <%= currentPath.startsWith('/pelanggan')   ? 'active' : '' %>">Pelanggan</a>
   </nav>
 
   <div class="sidebar-footer">
-    <div class="nav-label">Pengaturan</div>
-    <a href="/pengaturan" class="nav-item">Pengaturan</a>
     <form method="POST" action="/logout" class="logout-form">
-      <button type="submit" class="nav-item nav-item-button">Keluar</button>
+      <button type="submit" class="link-btn">Keluar</button>
     </form>
   </div>
 </aside>
